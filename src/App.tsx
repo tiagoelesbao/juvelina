@@ -19,7 +19,8 @@ import {
   TrendingUp,
   AtSign,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  Users
 } from 'lucide-react';
 
 function App() {
@@ -1023,7 +1024,7 @@ function App() {
                       />
                       <div className="flex-1" style={{fontFamily: "'Zap', sans-serif"}}>
                         <label htmlFor="option1" className="font-bold flex justify-between">
-                        <span>Compra única</span>
+                          <span>Compra única</span>
                           <span>R$ 149,90</span>
                         </label>
                         <p className="text-sm text-gray-600">Frasco único com 60 cápsulas</p>
@@ -1090,76 +1091,6 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* Global animations and styles */}
-      <style jsx global>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        
-        @keyframes expandWidth {
-          from { width: 0; }
-          to { width: 100%; }
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animate-expandWidth {
-          animation: expandWidth 0.5s ease-out forwards;
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.5s ease-out;
-        }
-        
-        .animate-fadeInUp {
-          animation: fadeInUp 0.7s ease-out forwards;
-        }
-        
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out;
-        }
-        
-        .delay-100 {
-          animation-delay: 0.1s;
-        }
-        
-        .delay-200 {
-          animation-delay: 0.2s;
-        }
-        
-        .delay-300 {
-          animation-delay: 0.3s;
-        }
-        
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }
