@@ -1,3 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'Ws Paradose';
+  src: url('https://fonts.cdnfonts.com/s/17860/WS-Paradose.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-light.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-regular.woff') format('woff');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-light-italic.woff') format('woff');
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-italic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* Estilos adicionais para melhorar a experiência do usuário */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Zap', sans-serif;
+}
+
+/* Customize scroll bar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #A9683D;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8a5430;
+}
+
+/* Adiciona efeito de transição aos botões */
+button, a {
+  transition: all 0.3s ease;
+}
