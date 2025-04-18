@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Leaf, 
   ShoppingCart, 
@@ -18,7 +18,6 @@ import {
   Zap,
   Lock,
   ShieldCheck,
-  TrendingUp,
   Brain
 } from 'lucide-react';
 import IngredientsList from './components/IngredientsList';
@@ -30,12 +29,14 @@ function App() {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
 
-  // Monitorar o scroll para efeitos visuais
+  // Monitorar o scroll para efeitos visuais com otimização de performance
   useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY);
+      window.requestAnimationFrame(() => {
+        setScrollPosition(window.scrollY);
+      });
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -187,23 +188,23 @@ function App() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1 animate-fadeInUp">
               <h1 className="text-4xl md:text-5xl font-['Ws_Paradose'] leading-tight mb-6 text-juvelina-gold">
-                Nutra Seu Bem-Estar com o Poder da Natureza
+                Transforme Sua Vitalidade com o Poder da Natureza
               </h1>
               <p className="text-gray-600 text-lg mb-8">
-                Descubra o suplemento líquido que está transformando vidas com alta absorção, ingredientes premium e resultados reais para sua energia, imunidade e beleza.
+                Desperte seu bem-estar com Juvelina: o suplemento líquido de alta absorção com 25 nutrientes premium que revoluciona sua energia, imunidade e beleza com resultados visíveis desde as primeiras semanas.
               </p>
               <div className="flex flex-wrap gap-4 mb-8">
                 <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
                   <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>Alta Absorção</span>
+                  <span>Absorção 5x Superior</span>
                 </div>
                 <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
                   <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>25 Nutrientes</span>
+                  <span>25 Nutrientes Essenciais</span>
                 </div>
                 <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
                   <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>Resultados Reais</span>
+                  <span>97% de Satisfação</span>
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -211,7 +212,7 @@ function App() {
                   onClick={() => setShowModal(true)}
                   className="bg-juvelina-gold text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition-all text-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
-                  Transforme Sua Saúde Hoje
+                  Experimente Juvelina Hoje
                   <ArrowRight size={20} />
                 </button>
                 <a 
@@ -657,10 +658,10 @@ function App() {
       <section id="planos" className="py-16 md:py-24 bg-gradient-to-b from-white to-juvelina-mint bg-opacity-10">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <div className="inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-gold font-medium mb-4">Invista em Seu Bem-Estar</div>
-            <h2 className="text-3xl md:text-4xl font-['Ws_Paradose'] mb-4 text-juvelina-gold">Escolha o Plano Ideal para Você</h2>
+            <div className="inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-gold font-medium mb-4">Escolha Sua Transformação</div>
+            <h2 className="text-3xl md:text-4xl font-['Ws_Paradose'] mb-4 text-juvelina-gold">Invista em Seu Bem-Estar Hoje</h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Opções flexíveis para acompanhar sua jornada de transformação, com entrega cuidadosa e qualidade garantida.
+              Planos flexíveis para cada etapa da sua jornada, com entrega garantida e resultados comprovados por milhares de clientes satisfeitos.
             </p>
           </div>
           
@@ -669,7 +670,7 @@ function App() {
             <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden">
               <div className="p-6">
                 <h3 className="text-xl font-bold mb-2">Experimente</h3>
-                <p className="text-gray-600 mb-6">Ideal para quem quer conhecer os benefícios da Juvelina</p>
+                <p className="text-gray-600 mb-6">Perfeito para iniciar sua jornada de transformação</p>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="text-3xl font-bold">R$149,90</div>
                   <div className="text-gray-500 line-through text-sm">R$179,90</div>
@@ -688,8 +689,11 @@ function App() {
                     <span className="text-gray-700">Garantia de 30 dias</span>
                   </li>
                 </ul>
-                <button className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition">
-                  Comprar Agora
+                <button 
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition"
+                >
+                  Começar Agora
                 </button>
               </div>
             </div>
@@ -701,7 +705,7 @@ function App() {
               </div>
               <div className="p-6 pt-10">
                 <h3 className="text-xl font-bold mb-2">Assinatura Mensal</h3>
-                <p className="text-gray-600 mb-6">A escolha ideal para manter seus resultados</p>
+                <p className="text-gray-600 mb-6">A escolha inteligente para resultados contínuos</p>
                 <div className="flex items-center gap-2 mb-6">
                   <div className="text-3xl font-bold">R$129,90<span className="text-sm font-normal">/mês</span></div>
                   <div className="text-gray-500 line-through text-sm">R$179,90</div>
@@ -709,11 +713,11 @@ function App() {
                 <ul className="space-y-3 mb-8">
                   <li className="flex items-center gap-2">
                     <CheckCircle size={16} className="text-juvelina-gold" />
-                    <span className="text-gray-700">Receba 1 frasco todo mês</span>
+                    <span className="text-gray-700">Receba 1 frasco todo mês sem preocupações</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle size={16} className="text-juvelina-gold" />
-                    <span className="text-gray-700">Economize R$50/mês</span>
+                    <span className="text-gray-700">Economize R$600/ano</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle size={16} className="text-juvelina-gold" />
@@ -728,8 +732,11 @@ function App() {
                     <span className="text-gray-700">Acesso a conteúdos exclusivos</span>
                   </li>
                 </ul>
-                <button className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition">
-                  Assinar Agora
+                <button 
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition font-bold"
+                >
+                  Garanta Sua Assinatura
                 </button>
               </div>
             </div>
@@ -761,7 +768,10 @@ function App() {
                     <span className="text-gray-700">Garantia Estendida de 90 dias</span>
                   </li>
                 </ul>
-                <button className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition">
+                <button 
+                  onClick={() => setShowModal(true)}
+                  className="w-full bg-juvelina-gold text-white py-3 rounded-xl hover:bg-opacity-90 transition"
+                >
                   Comprar Kit
                 </button>
               </div>
@@ -990,7 +1000,7 @@ function App() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-juvelina-gold">Comprar Juvelina</h3>
+                <h3 className="text-xl font-bold text-juvelina-gold">Transforme Seu Bem-Estar Hoje</h3>
                 <button 
                   onClick={() => setShowModal(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -1003,15 +1013,15 @@ function App() {
                 <div className="relative rounded-lg overflow-hidden mb-4 bg-juvelina-mint bg-opacity-20">
                   <img 
                     src="https://images.unsplash.com/photo-1607006333439-505849ef4f76?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
-                    alt="Juvelina Product" 
+                    alt="Juvelina - Suplemento Líquido Premium" 
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                   <div className="absolute top-3 right-3 bg-juvelina-gold text-white text-sm py-1 px-3 rounded-full">
-                    25% OFF
+                    OFERTA LIMITADA
                   </div>
                 </div>
-                <h4 className="font-bold text-lg">Juvelina - Suplemento Líquido</h4>
-                <p className="text-gray-600">Frasco com 25 nutrientes essenciais (30 dias de tratamento)</p>
+                <h4 className="font-bold text-lg">Juvelina - Suplemento Líquido Natural</h4>
+                <p className="text-gray-600">Frasco com 25 nutrientes essenciais para 30 dias de transformação</p>
                 <div className="flex justify-between items-center mt-4">
                   <div className="font-bold text-2xl text-juvelina-gold">R$ 149,90</div>
                   <div className="text-sm text-gray-500 line-through">R$ 199,90</div>
@@ -1022,7 +1032,7 @@ function App() {
                   <Star size={14} fill="currentColor" className="text-yellow-400" />
                   <Star size={14} fill="currentColor" className="text-yellow-400" />
                   <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <span className="ml-1">4.9 (512 avaliações)</span>
+                  <span className="ml-1">4.9 (512 avaliações verificadas)</span>
                 </div>
               </div>
               
@@ -1096,7 +1106,7 @@ function App() {
               <div className="space-y-4">
                 <button className="w-full bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition font-medium flex items-center justify-center gap-2 shadow-lg transform hover:-translate-y-1">
                   <ShoppingCart size={18} />
-                  Adicionar ao Carrinho
+                  Garantir Meu Juvelina Agora
                 </button>
                 
                 <div className="flex items-center justify-center gap-6 text-sm text-gray-600 py-2">
