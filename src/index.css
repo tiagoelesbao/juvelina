@@ -145,4 +145,16 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+/* Adicione ao seu index.css */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Verificar se algum elemento tem largura que excede o viewport */
+* {
+  max-width: 100vw;
+  box-sizing: border-box;
+}
 }
