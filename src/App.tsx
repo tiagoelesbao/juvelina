@@ -196,22 +196,58 @@ function App() {
               <p className="text-gray-600 text-lg mb-8">
                 Desperte seu bem-estar com Juvelina: o suplemento líquido de alta absorção com 25 nutrientes premium que revoluciona sua energia, imunidade e beleza com resultados visíveis desde as primeiras semanas.
               </p>
-              {/* Resto do conteúdo... */}
+              <div className="flex flex-wrap gap-4 mb-8">
+                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
+                  <CheckCircle className="text-juvelina-gold" size={20} />
+                  <span>Absorção 5x Superior</span>
+                </div>
+                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
+                  <CheckCircle className="text-juvelina-gold" size={20} />
+                  <span>25 Nutrientes Essenciais</span>
+                </div>
+                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
+                  <CheckCircle className="text-juvelina-gold" size={20} />
+                  <span>97% de Satisfação</span>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => setShowModal(true)}
+                  className="bg-juvelina-gold text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition-all text-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  Experimente Juvelina Hoje
+                  <ArrowRight size={20} />
+                </button>
+                <a 
+                  href="#como-funciona"
+                  className="border border-juvelina-gold text-juvelina-gold px-8 py-3 rounded-full hover:bg-juvelina-mint hover:bg-opacity-20 transition text-lg font-medium flex items-center justify-center"
+                >
+                  Descubra Como Funciona
+                </a>
+              </div>
             </div>
             <div className="order-1 md:order-2 flex justify-center relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-juvelina-aqua rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-juvelina-mint rounded-full filter blur-3xl opacity-20 animate-pulse-slow" style={{animationDelay: '2s'}}></div>
+              
+              {/* Elemento "Viral no TikTok" */}
+              <div className="absolute -top-10 right-0 md:-top-16 md:right-10 z-20 animate-pulse-slow" 
+                style={{animationDuration: '3s'}}>
+                <div className="bg-juvelina-gold bg-opacity-90 text-white px-4 py-2 rounded-full shadow-lg transform rotate-12">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" className="w-4 h-4 fill-current">
+                      <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/>
+                    </svg>
+                    <span className="font-bold">Viral no TikTok</span>
+                  </div>
+                </div>
+              </div>
+              
               <img 
                 src="https://images.unsplash.com/photo-1607006333439-505849ef4f76?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
                 alt="Suplemento Líquido Juvelina" 
                 className="rounded-lg shadow-2xl max-w-full h-auto z-10 relative animate-float"
               />
-              <div className="absolute -bottom-4 right-4 md:-bottom-5 md:-right-5 bg-white p-3 md:p-4 rounded-lg shadow-lg">
-                <div className="flex items-center gap-2 text-juvelina-gold">
-                  <BadgeCheck size={18} className="flex-shrink-0" />
-                  <span className="font-bold text-sm md:text-base">Pureza Certificada</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -381,10 +417,10 @@ function App() {
                 alt="Ingredientes Naturais" 
                 className="rounded-lg shadow-2xl transform hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute -bottom-5 -right-5 bg-white p-4 rounded-lg shadow-lg">
+              <div className="absolute -bottom-4 right-4 md:-bottom-5 md:-right-5 bg-white p-3 rounded-lg shadow-lg">
                 <div className="flex items-center gap-2 text-juvelina-gold">
-                  <BadgeCheck />
-                  <span className="font-bold">Pureza Certificada</span>
+                  <BadgeCheck className="flex-shrink-0" size={18} />
+                  <span className="font-bold text-sm md:text-base">Pureza Certificada</span>
                 </div>
               </div>
             </div>
