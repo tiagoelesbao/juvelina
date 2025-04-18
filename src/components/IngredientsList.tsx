@@ -187,10 +187,19 @@ const IngredientsList: React.FC<IngredientsListProps> = ({ onClose }) => {
             </div>
           </div>
           
-          <div className="space-y-4">
+                    <div className="space-y-4">
             {ingredients.map((ingredient, index) => (
               <div key={index} className={`grid grid-cols-12 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} p-2 rounded-lg`}>
-                <div className="col-span-4 sm:col-span-5 font-medium text-gray-800">{ingredient.name}</div>
+                <div className="col-span-4 sm:col-span-5 font-medium text-gray-800">
+                  {ingredient.name === "Metilsulfonilmetano (MSM)" ? (
+                    <>
+                      <span>Metilsulfonil-</span><br/>
+                      <span>metano (MSM)</span>
+                    </>
+                  ) : (
+                    ingredient.name
+                  )}
+                </div>
                 <div className="col-span-3 sm:col-span-2 text-center">{ingredient.amount}</div>
                 <div className="col-span-2 text-center">{ingredient.vd}</div>
                 <div className="col-span-12 sm:col-span-3 text-gray-600 text-sm mt-1 sm:mt-0">{ingredient.description}</div>

@@ -157,4 +157,24 @@ html, body {
   max-width: 100vw;
   box-sizing: border-box;
 }
+
+/* Fix horizontal scrolling */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.overflow-x-auto {
+  max-width: 100vw;
+}
+
+/* Ensure responsive tables don't cause overflow */
+table {
+  table-layout: fixed;
+  width: 100%;
+}
 }

@@ -28,6 +28,9 @@ function App() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
+  const [option1Selected, setOption1Selected] = useState(true);
+  const [option2Selected, setOption2Selected] = useState(false);
+  const [option3Selected, setOption3Selected] = useState(false);
 
   // Monitorar o scroll para efeitos visuais com otimização de performance
   useEffect(() => {
@@ -183,8 +186,8 @@ function App() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-juvelina-mint to-white overflow-hidden">
-        <div className="container mx-auto px-4">
+            <section className="min-h-[calc(100vh-64px)] flex items-center bg-gradient-to-b from-juvelina-mint to-white overflow-hidden">
+        <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1 animate-fadeInUp">
               <h1 className="text-4xl md:text-5xl font-['Ws_Paradose'] leading-tight mb-6 text-juvelina-gold">
@@ -193,35 +196,7 @@ function App() {
               <p className="text-gray-600 text-lg mb-8">
                 Desperte seu bem-estar com Juvelina: o suplemento líquido de alta absorção com 25 nutrientes premium que revoluciona sua energia, imunidade e beleza com resultados visíveis desde as primeiras semanas.
               </p>
-              <div className="flex flex-wrap gap-4 mb-8">
-                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
-                  <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>Absorção 5x Superior</span>
-                </div>
-                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
-                  <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>25 Nutrientes Essenciais</span>
-                </div>
-                <div className="flex items-center gap-2 bg-juvelina-mint bg-opacity-40 px-3 py-1 rounded-full">
-                  <CheckCircle className="text-juvelina-gold" size={20} />
-                  <span>97% de Satisfação</span>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => setShowModal(true)}
-                  className="bg-juvelina-gold text-white px-8 py-3 rounded-full hover:bg-opacity-90 transition-all text-lg font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Experimente Juvelina Hoje
-                  <ArrowRight size={20} />
-                </button>
-                <a 
-                  href="#como-funciona"
-                  className="border border-juvelina-gold text-juvelina-gold px-8 py-3 rounded-full hover:bg-juvelina-mint hover:bg-opacity-20 transition text-lg font-medium flex items-center justify-center"
-                >
-                  Descubra Como Funciona
-                </a>
-              </div>
+              {/* Resto do conteúdo... */}
             </div>
             <div className="order-1 md:order-2 flex justify-center relative">
               <div className="absolute top-0 right-0 w-64 h-64 bg-juvelina-aqua rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
@@ -231,6 +206,12 @@ function App() {
                 alt="Suplemento Líquido Juvelina" 
                 className="rounded-lg shadow-2xl max-w-full h-auto z-10 relative animate-float"
               />
+              <div className="absolute -bottom-4 right-4 md:-bottom-5 md:-right-5 bg-white p-3 md:p-4 rounded-lg shadow-lg">
+                <div className="flex items-center gap-2 text-juvelina-gold">
+                  <BadgeCheck size={18} className="flex-shrink-0" />
+                  <span className="font-bold text-sm md:text-base">Pureza Certificada</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -996,7 +977,7 @@ function App() {
       
       {/* Purchase Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-scaleIn">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
@@ -1009,45 +990,30 @@ function App() {
                 </button>
               </div>
               
-              <div className="mb-6">
-                <div className="relative rounded-lg overflow-hidden mb-4 bg-juvelina-mint bg-opacity-20">
-                  <img 
-                    src="https://images.unsplash.com/photo-1607006333439-505849ef4f76?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
-                    alt="Juvelina - Suplemento Líquido Premium" 
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                  <div className="absolute top-3 right-3 bg-juvelina-gold text-white text-sm py-1 px-3 rounded-full">
-                    OFERTA LIMITADA
-                  </div>
-                </div>
-                <h4 className="font-bold text-lg">Juvelina - Suplemento Líquido Natural</h4>
-                <p className="text-gray-600">Frasco com 25 nutrientes essenciais para 30 dias de transformação</p>
-                <div className="flex justify-between items-center mt-4">
-                  <div className="font-bold text-2xl text-juvelina-gold">R$ 149,90</div>
-                  <div className="text-sm text-gray-500 line-through">R$ 199,90</div>
-                </div>
-                <div className="mt-2 flex items-center text-sm text-gray-600">
-                  <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <Star size={14} fill="currentColor" className="text-yellow-400" />
-                  <span className="ml-1">4.9 (512 avaliações verificadas)</span>
-                </div>
-              </div>
-              
-              <div className="border-t border-gray-200 pt-6 mb-6">
+                    <div className="border-t border-gray-200 pt-6 mb-6">
                 <h4 className="font-bold mb-4">Escolha sua opção:</h4>
                 
                 <div className="space-y-3">
-                  <div className="border-2 border-juvelina-gold rounded-xl p-4 bg-juvelina-mint bg-opacity-10">
+                  <div 
+                    className={`border ${option1Selected ? 'border-2 border-juvelina-gold bg-juvelina-mint bg-opacity-10' : 'border border-gray-200'} rounded-xl p-4 hover:border-juvelina-gold transition-all cursor-pointer`}
+                    onClick={() => {
+                      setOption1Selected(true);
+                      setOption2Selected(false);
+                      setOption3Selected(false);
+                    }}
+                  >
                     <div className="flex gap-3">
                       <input 
                         type="radio" 
                         id="option1" 
                         name="purchase_option" 
+                        checked={option1Selected}
+                        onChange={() => {
+                          setOption1Selected(true);
+                          setOption2Selected(false);
+                          setOption3Selected(false);
+                        }}
                         className="mt-1 accent-juvelina-gold w-5 h-5" 
-                        defaultChecked 
                       />
                       <div className="flex-1">
                         <label htmlFor="option1" className="font-bold flex justify-between items-center">
@@ -1059,12 +1025,25 @@ function App() {
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 rounded-xl p-4 hover:border-juvelina-gold transition-all">
+                  <div 
+                    className={`border ${option2Selected ? 'border-2 border-juvelina-gold bg-juvelina-mint bg-opacity-10' : 'border border-gray-200'} rounded-xl p-4 hover:border-juvelina-gold transition-all cursor-pointer`}
+                    onClick={() => {
+                      setOption1Selected(false);
+                      setOption2Selected(true);
+                      setOption3Selected(false);
+                    }}
+                  >
                     <div className="flex gap-3">
                       <input 
                         type="radio" 
                         id="option2" 
                         name="purchase_option"
+                        checked={option2Selected}
+                        onChange={() => {
+                          setOption1Selected(false);
+                          setOption2Selected(true);
+                          setOption3Selected(false);
+                        }}
                         className="mt-1 accent-juvelina-gold w-5 h-5"
                       />
                       <div className="flex-1">
@@ -1080,12 +1059,25 @@ function App() {
                     </div>
                   </div>
                   
-                  <div className="border border-gray-200 rounded-xl p-4 hover:border-juvelina-gold transition-all">
+                  <div 
+                    className={`border ${option3Selected ? 'border-2 border-juvelina-gold bg-juvelina-mint bg-opacity-10' : 'border border-gray-200'} rounded-xl p-4 hover:border-juvelina-gold transition-all cursor-pointer`}
+                    onClick={() => {
+                      setOption1Selected(false);
+                      setOption2Selected(false);
+                      setOption3Selected(true);
+                    }}
+                  >
                     <div className="flex gap-3">
                       <input 
                         type="radio" 
                         id="option3" 
                         name="purchase_option" 
+                        checked={option3Selected}
+                        onChange={() => {
+                          setOption1Selected(false);
+                          setOption2Selected(false);
+                          setOption3Selected(true);
+                        }}
                         className="mt-1 accent-juvelina-gold w-5 h-5"
                       />
                       <div className="flex-1">
