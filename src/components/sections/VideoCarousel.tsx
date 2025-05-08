@@ -1,9 +1,8 @@
 // src/components/ui/VideoCarousel.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Instagram } from 'lucide-react';
 import TikTokIcon from './TikTokIcon';
-import Instagram from 'lucide-react/dist/esm/icons/instagram';
 
 interface VideoTestimonial {
   id: number;
@@ -33,7 +32,7 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoTestimonial | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Filtrar depoimentos
   const filteredTestimonials = activeFilter === 'todos'
@@ -213,7 +212,7 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
           onTouchStart={() => setIsScrolling(true)}
         >
           {filteredTestimonials.length > 0 ? (
-            filteredTestimonials.map((testimonial, index) => (
+            filteredTestimonials.map((testimonial) => (
               <motion.div
                 key={testimonial.id}
                 className="min-w-[320px] max-w-[320px] bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0"
