@@ -1,4 +1,4 @@
-// src/components/modals/PurchaseModal.tsx - CORRECTED VERSION WITH FIXED EXIT INTENT BEHAVIOR
+// src/components/modals/PurchaseModal.tsx - CORRECTED VERSION WITH FIXED DIV TAG
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, CheckCircle, Clock, Shield, Star } from 'lucide-react';
@@ -324,76 +324,77 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                       >
                         {option.popular && (
                           <motion.div
-                          className="absolute -top-3 right-4 bg-juvelina-gold text-white text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wide"
-                          animate={{ 
-                            scale: [1, 1.05, 1],
-                            boxShadow: [
-                              '0 0 0 rgba(212, 178, 106, 0.4)',
-                              '0 0 8px rgba(212, 178, 106, 0.8)',
-                              '0 0 0 rgba(212, 178, 106, 0.4)'
-                            ]
-                          }}
-                          transition={{
-                            repeat: Infinity,
-                            repeatType: "mirror",
-                            duration: 2
-                          }}
-                        >
-                          Mais Popular
-                        </motion.div>
-                      )}
-                      
-                      <div className="flex gap-3">
-                        <input
-                          type="radio"
-                          id={`option-${key}`}
-                          name="purchase_option"
-                          checked={selectedOption === key}
-                          onChange={() => setSelectedOption(key)}
-                          className="mt-1 accent-juvelina-gold w-5 h-5"
-                        />
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <label htmlFor={`option-${key}`} className="font-bold flex items-center">
-                              <span>{option.title}</span>
-                              {calculateDiscount(option.originalPrice, option.price) > 0 && (
-                                <span className="ml-2 bg-juvelina-gold/10 text-juvelina-gold text-xs px-2 py-0.5 rounded-full">
-                                  {calculateDiscount(option.originalPrice, option.price)}% OFF
+                            className="absolute -top-3 right-4 bg-juvelina-gold text-white text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wide"
+                            animate={{ 
+                              scale: [1, 1.05, 1],
+                              boxShadow: [
+                                '0 0 0 rgba(212, 178, 106, 0.4)',
+                                '0 0 8px rgba(212, 178, 106, 0.8)',
+                                '0 0 0 rgba(212, 178, 106, 0.4)'
+                              ]
+                            }}
+                            transition={{
+                              repeat: Infinity,
+                              repeatType: "mirror",
+                              duration: 2
+                            }}
+                          >
+                            Mais Popular
+                          </motion.div>
+                        )}
+                        
+                        <div className="flex gap-3">
+                          <input
+                            type="radio"
+                            id={`option-${key}`}
+                            name="purchase_option"
+                            checked={selectedOption === key}
+                            onChange={() => setSelectedOption(key)}
+                            className="mt-1 accent-juvelina-gold w-5 h-5"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-center">
+                              <label htmlFor={`option-${key}`} className="font-bold flex items-center">
+                                <span>{option.title}</span>
+                                {calculateDiscount(option.originalPrice, option.price) > 0 && (
+                                  <span className="ml-2 bg-juvelina-gold/10 text-juvelina-gold text-xs px-2 py-0.5 rounded-full">
+                                    {calculateDiscount(option.originalPrice, option.price)}% OFF
+                                  </span>
+                                )}
+                              </label>
+                              <div>
+                                <span className="text-juvelina-gold font-bold">
+                                  R$ {formatPrice(option.price)}
+                                  {key === 'monthly' && <span className="text-sm font-normal">/mês</span>}
                                 </span>
-                              )}
-                            </label>
-                            <div>
-                              <span className="text-juvelina-gold font-bold">
-                                R$ {formatPrice(option.price)}
-                                {key === 'monthly' && <span className="text-sm font-normal">/mês</span>}
-                              </span>
-                              <div className="text-gray-500 line-through text-sm">
-                                R$ {formatPrice(option.originalPrice)}
+                                <div className="text-gray-500 line-through text-sm">
+                                  R$ {formatPrice(option.originalPrice)}
+                                </div>
                               </div>
                             </div>
+                            <p className="text-sm text-gray-600 mt-1">{option.description}</p>
+                            
+                            {/* Mostrar benefícios apenas para a opção selecionada */}
+                            {selectedOption === key && (
+                              <motion.div 
+                                className="mt-3 space-y-2 bg-gray-50 p-3 rounded-lg"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                {option.benefits.map((benefit, index) => (
+                                  <div key={index} className="flex items-start gap-2">
+                                    <CheckCircle size={16} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
+                                    <span className="text-sm">{benefit}</span>
+                                  </div>
+                                ))}
+                              </motion.div>
+                            )}
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{option.description}</p>
-                          
-                          {/* Mostrar benefícios apenas para a opção selecionada */}
-                          {selectedOption === key && (
-                            <motion.div 
-                              className="mt-3 space-y-2 bg-gray-50 p-3 rounded-lg"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              transition={{ duration: 0.3 }}
-                            >
-                              {option.benefits.map((benefit, index) => (
-                                <div key={index} className="flex items-start gap-2">
-                                  <CheckCircle size={16} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
-                                  <span className="text-sm">{benefit}</span>
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
               
