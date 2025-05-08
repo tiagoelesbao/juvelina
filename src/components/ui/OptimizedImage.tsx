@@ -1,5 +1,5 @@
 // src/components/ui/OptimizedImage.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -19,7 +19,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false
 }) => {
   const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
 
   // Determine if WebP version exists
   const srcWebP = src.replace(/\.(jpe?g|png)$/i, '.webp');
@@ -44,7 +43,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           loading={priority ? "eager" : "lazy"}
           decoding={priority ? "sync" : "async"}
           onLoad={() => setLoaded(true)}
-          onError={() => setError(true)}
           className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
         />
       </picture>

@@ -1,7 +1,7 @@
 // src/components/hooks/useScrollAnimation.tsx
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useAnimation, motion } from 'framer-motion';
+import { useAnimation } from 'framer-motion';
 
 export const useScrollAnimation = (threshold = 0.2, delay = 0, once = true) => {
   const controls = useAnimation();
