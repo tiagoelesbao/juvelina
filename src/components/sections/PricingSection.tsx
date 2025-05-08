@@ -1,4 +1,4 @@
-// src/components/sections/PricingSection.tsx - NOVA SEÇÃO
+// src/components/sections/PricingSection.tsx - CORRECTED VERSION
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Star } from 'lucide-react';
@@ -87,21 +87,21 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onCtaClick }) => {
               key={plan.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className={`bg-white rounded-2xl shadow-lg overflow-hidden relative ${
+              className={`bg-white rounded-2xl shadow-lg overflow-hidden relative flex flex-col ${
                 plan.popular ? 'ring-2 ring-juvelina-gold md:-mt-4 md:mb-4' : ''
               }`}
             >
               {plan.popular && (
-                <div className="bg-juvelina-gold text-white py-1.5 px-6 absolute -right-12 top-6 rotate-45 font-medium text-sm">
+                <div className="bg-juvelina-gold text-white py-1.5 px-6 absolute -right-12 top-6 rotate-45 font-medium text-sm z-10">
                   MAIS POPULAR
                 </div>
               )}
               
-              <div className="p-6 pb-3">
+              <div className="p-6 pb-3 flex-grow">
                 <h3 className="text-xl font-bold mb-1">{plan.title}</h3>
-                <p className="text-gray-500 text-sm h-10">{plan.description}</p>
+                <p className="text-gray-500 text-sm min-h-[40px]">{plan.description}</p>
                 
                 <div className="mt-4 flex items-baseline gap-2">
                   <span className="text-3xl font-bold">R$ {formatPrice(plan.price)}</span>
@@ -118,7 +118,7 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onCtaClick }) => {
               
               <div className="border-t border-gray-100" />
               
-              <div className="p-6 pt-4">
+              <div className="p-6 pt-4 flex-grow">
                 <ul className="space-y-3">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
@@ -127,10 +127,13 @@ const PricingSection: React.FC<PricingSectionProps> = ({ onCtaClick }) => {
                     </li>
                   ))}
                 </ul>
-                
+              </div>
+              
+              {/* Botões alinhados uniformemente */}
+              <div className="p-6 pt-0 mt-auto">
                 <button
                   onClick={onCtaClick}
-                  className={`w-full mt-6 rounded-lg py-3 px-4 font-medium transition-colors ${
+                  className={`w-full rounded-lg py-3 px-4 font-medium transition-colors ${
                     plan.popular
                       ? 'bg-juvelina-gold text-white hover:bg-opacity-90'
                       : 'bg-white text-juvelina-gold border border-juvelina-gold hover:bg-juvelina-mint/10'

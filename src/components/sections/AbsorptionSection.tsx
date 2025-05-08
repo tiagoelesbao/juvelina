@@ -1,129 +1,34 @@
-// src/components/sections/AbsorptionSection.tsx
-import React, { useRef, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-// Registrar plugin ScrollTrigger
-gsap.registerPlugin(ScrollTrigger);
+// src/components/sections/AbsorptionSection.tsx - CORRECTED VERSION
+import React, { useEffect } from 'react';
+import { motion, useScroll, useTransform, useAnimation } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 
 const AbsorptionSection: React.FC = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const liquidBarRef = useRef<HTMLDivElement>(null);
-  const capsuleBarRef = useRef<HTMLDivElement>(null);
-  const liquidDropsRef = useRef<HTMLDivElement>(null);
-  const capsuleParticlesRef = useRef<HTMLDivElement>(null);
-  
-  // Scroll animation com GSAP
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    
-    // Animação da barra de absorção de líquido
-    const liquidBarAnim = gsap.fromTo(
-      liquidBarRef.current,
-      { width: 0 },
-      {
-        width: '100%',
-        duration: 2.5,
-        ease: 'power2.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 70%',
-          toggleActions: 'play none none reverse'
-        }
-      }
-    );
-    
-    // Animação da barra de absorção de cápsula
-    const capsuleBarAnim = gsap.fromTo(
-      capsuleBarRef.current,
-      { width: 0 },
-      {
-        width: '20%',
-        duration: 4,
-        ease: 'power1.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 70%',
-          toggleActions: 'play none none reverse'
-        }
-      }
-    );
-    
-    // Animação de gotas líquidas
-    if (liquidDropsRef.current) {
-      const drops = liquidDropsRef.current.children;
-      gsap.fromTo(
-        drops,
-        { 
-          y: -20, 
-          opacity: 0, 
-          scale: 0.5 
-        },
-        { 
-          y: 0, 
-          opacity: 1, 
-          scale: 1,
-          stagger: 0.1,
-          duration: 0.8,
-          ease: 'back.out(1.7)',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 70%',
-            toggleActions: 'play none none reverse'
-          }
-        }
-      );
-    }
-    
-    // Animação de partículas da cápsula (mais lenta e irregular)
-    if (capsuleParticlesRef.current) {
-      const particles = capsuleParticlesRef.current.children;
-      gsap.fromTo(
-        particles,
-        { 
-          y: -5, 
-          opacity: 0, 
-          scale: 0.8 
-        },
-        { 
-          y: 0, 
-          opacity: 0.7, 
-          scale: 1,
-          stagger: 0.25,
-          duration: 1.2,
-          ease: 'power1.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 70%',
-            toggleActions: 'play none none reverse'
-          }
-        }
-      );
-    }
-    
-    return () => {
-      // Cleanup animations
-      [liquidBarAnim, capsuleBarAnim].forEach(anim => {
-        anim.scrollTrigger?.kill();
-        anim.kill();
-      });
-    };
-  }, []);
-  
-  // Parallax effect
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
     offset: ["start end", "end start"]
   });
   
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
   
+  // Usar useInView para controlar animações
+  const [containerRef, inView] = useInView({
+    threshold: 0.2,
+    triggerOnce: true
+  });
+  
+  const controls = useAnimation();
+  
+  useEffect(() => {
+    if (inView) {
+      controls.start('visible');
+    }
+  }, [controls, inView]);
+
   return (
     <section 
-      ref={sectionRef} 
       id="absorpcao" 
       className="py-24 relative overflow-hidden"
+      ref={containerRef}
     >
       {/* Background Pattern */}
       <motion.div 
@@ -152,39 +57,107 @@ const AbsorptionSection: React.FC = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Coluna de Forma Líquida */}
-          <div>
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all">
+          {/* Coluna de Forma Líquida - Redesenhado e Mais Suave */}
+          <motion.div
+            initial="hidden"
+            animate={controls}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { 
+                opacity: 1,
+                transition: { staggerChildren: 0.2 }
+              }
+            }}
+          >
+            <motion.div 
+              className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: { duration: 0.5 }
+                }
+              }}
+            >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-juvelina-mint rounded-full flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-juvelina-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-juvelina-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-juvelina-emerald">Juvelina (Forma Líquida)</h3>
+                <h3 className="text-xl font-bold text-juvelina-gold">Juvelina (Forma Líquida)</h3>
               </div>
               
-              <div className="relative h-16 bg-gray-100 rounded-full mb-8 overflow-hidden">
-                <div 
-                  ref={liquidBarRef}
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-juvelina-emerald to-juvelina-gold rounded-full"
-                  style={{ width: 0 }}
-                />
-                
-                {/* Animação de gotículas */}
-                <div 
-                  ref={liquidDropsRef} 
-                  className="absolute top-0 left-0 w-full h-full flex items-center justify-between px-6"
+              {/* Nova barra de progresso mais suave com animação de partículas melhorada */}
+              <div className="relative h-14 bg-gray-100 rounded-lg mb-8 overflow-hidden">
+                <motion.div 
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-juvelina-gold to-juvelina-mint rounded-lg flex items-center justify-end pr-6"
+                  initial={{ width: 0 }}
+                  variants={{
+                    hidden: { width: 0 },
+                    visible: { 
+                      width: "100%",
+                      transition: { 
+                        duration: 1.5,
+                        ease: "easeOut"
+                      }
+                    }
+                  }}
                 >
-                  {[...Array(8)].map((_, index) => (
-                    <div 
+                  <motion.span 
+                    className="font-bold text-white text-lg"
+                    initial={{ opacity: 0 }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { 
+                        opacity: 1,
+                        transition: { delay: 1, duration: 0.5 }
+                      }
+                    }}
+                  >
+                    100% absorvido
+                  </motion.span>
+                </motion.div>
+                
+                {/* Animação de gotículas mais sutil e sem sobrepor texto */}
+                <motion.div 
+                  className="absolute top-0 left-0 w-[95%] h-full pointer-events-none"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { 
+                      opacity: 1,
+                      transition: { delay: 0.5 }
+                    }
+                  }}
+                >
+                  {[...Array(6)].map((_, index) => (
+                    <motion.div 
                       key={index} 
-                      className="w-3 h-3 bg-white rounded-full opacity-0"
-                      style={{ boxShadow: '0 0 10px rgba(255,255,255,0.8)' }}
+                      className="absolute w-2 h-2 bg-white rounded-full"
+                      style={{ 
+                        left: `${(index + 1) * 15}%`, 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        boxShadow: '0 0 8px rgba(255,255,255,0.6)' 
+                      }}
+                      variants={{
+                        hidden: { opacity: 0, scale: 0 },
+                        visible: {
+                          opacity: [0, 1, 0],
+                          scale: [0.5, 1, 0.5],
+                          transition: {
+                            repeat: Infinity,
+                            repeatType: "reverse",
+                            duration: 2,
+                            delay: index * 0.2,
+                            ease: "easeInOut"
+                          }
+                        }
+                      }}
                     />
                   ))}
-                  <div className="absolute right-4 font-bold text-white text-lg">100% absorvido</div>
-                </div>
+                </motion.div>
               </div>
               
               <p className="text-gray-700 mb-6">
@@ -193,7 +166,7 @@ const AbsorptionSection: React.FC = () => {
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 text-juvelina-emerald">
+                  <div className="mt-1 text-juvelina-gold">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -204,7 +177,7 @@ const AbsorptionSection: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 text-juvelina-emerald">
+                  <div className="mt-1 text-juvelina-gold">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -215,7 +188,7 @@ const AbsorptionSection: React.FC = () => {
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 text-juvelina-emerald">
+                  <div className="mt-1 text-juvelina-gold">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
@@ -225,12 +198,35 @@ const AbsorptionSection: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
-          {/* Coluna de Cápsulas */}
-          <div>
-            <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all">
+          {/* Coluna de Cápsulas - Redesenhado e Mais Suave */}
+          <motion.div
+            initial="hidden"
+            animate={controls}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: { 
+                opacity: 1,
+                transition: { 
+                  staggerChildren: 0.2,
+                  delay: 0.2
+                }
+              }
+            }}
+          >
+            <motion.div 
+              className="bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { 
+                  opacity: 1, 
+                  y: 0,
+                  transition: { duration: 0.5 }
+                }
+              }}
+            >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -240,26 +236,75 @@ const AbsorptionSection: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-700">Suplementos em Cápsulas</h3>
               </div>
               
-              <div className="relative h-16 bg-gray-100 rounded-full mb-8 overflow-hidden">
-                <div 
-                  ref={capsuleBarRef}
-                  className="absolute top-0 left-0 h-full bg-gray-400 rounded-full"
-                  style={{ width: 0 }}
-                />
-                
-                {/* Animação de partículas da cápsula */}
-                <div 
-                  ref={capsuleParticlesRef} 
-                  className="absolute top-0 left-0 w-full h-full flex items-center justify-start px-6"
+              {/* Nova barra de progresso corrigida */}
+              <div className="relative h-14 bg-gray-100 rounded-lg mb-8 overflow-hidden">
+                <motion.div 
+                  className="absolute top-0 left-0 h-full bg-gray-400 rounded-lg flex items-center justify-center"
+                  initial={{ width: 0 }}
+                  variants={{
+                    hidden: { width: 0 },
+                    visible: { 
+                      width: "20%",
+                      transition: { 
+                        duration: 1.8,
+                        ease: "easeOut",
+                        delay: 0.3
+                      }
+                    }
+                  }}
                 >
-                  {[...Array(4)].map((_, index) => (
-                    <div 
+                  <motion.span 
+                    className="font-bold text-white text-lg whitespace-nowrap"
+                    initial={{ opacity: 0 }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { 
+                        opacity: 1,
+                        transition: { delay: 1.2, duration: 0.5 }
+                      }
+                    }}
+                  >
+                    Apenas 20% absorvido
+                  </motion.span>
+                </motion.div>
+                
+                {/* Animação simplificada sem sobrepor texto */}
+                <motion.div 
+                  className="absolute top-0 left-0 w-[15%] h-full pointer-events-none"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { 
+                      opacity: 1,
+                      transition: { delay: 0.8 }
+                    }
+                  }}
+                >
+                  {[...Array(2)].map((_, index) => (
+                    <motion.div 
                       key={index} 
-                      className="w-2 h-2 bg-gray-600 rounded-full opacity-0 ml-4"
+                      className="absolute w-1.5 h-1.5 bg-gray-500 rounded-full"
+                      style={{ 
+                        left: `${(index + 1) * 5}%`, 
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                      }}
+                      variants={{
+                        hidden: { opacity: 0, scale: 0 },
+                        visible: {
+                          opacity: [0, 0.5, 0],
+                          scale: [0.5, 1, 0.5],
+                          transition: {
+                            repeat: Infinity,
+                            repeatType: "reverse",
+                            duration: 3,
+                            delay: index * 0.4,
+                            ease: "easeInOut"
+                          }
+                        }
+                      }}
                     />
                   ))}
-                  <div className="absolute left-4 font-bold text-gray-700 text-lg">Apenas 20% absorvido</div>
-                </div>
+                </motion.div>
               </div>
               
               <p className="text-gray-700 mb-6">
@@ -300,8 +345,8 @@ const AbsorptionSection: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
         
         {/* Seção de Estudo */}

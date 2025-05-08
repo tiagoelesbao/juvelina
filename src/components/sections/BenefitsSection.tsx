@@ -9,7 +9,7 @@ const BenefitsSection: React.FC = () => {
   // Dados dos benefícios
   const benefits = {
     energy: {
-      icon: <Zap className="h-10 w-10 text-juvelina-emerald" />,
+      icon: <Zap className="h-10 w-10 text-juvelina-gold" />,
       title: "Energia Sustentada",
       description: "Nosso complexo exclusivo de BCAAs e vitaminas do complexo B proporciona energia constante ao longo do dia, sem os picos e quedas de cafeína e açúcar.",
       image: "https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGVuZXJneXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
@@ -17,7 +17,7 @@ const BenefitsSection: React.FC = () => {
       solution: "BCAAs e vitaminas B em forma líquida para absorção imediata"
     },
     immunity: {
-      icon: <Shield className="h-10 w-10 text-juvelina-emerald" />,
+      icon: <Shield className="h-10 w-10 text-juvelina-gold" />,
       title: "Imunidade Reforçada",
       description: "A combinação sinérgica de Vitamina C, Zinco e Glutamina fortalece suas defesas naturais, deixando seu corpo preparado para enfrentar qualquer desafio.",
       image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aW1tdW5pdHl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=800&q=60",
@@ -25,7 +25,7 @@ const BenefitsSection: React.FC = () => {
       solution: "Glutamina, Zinco e Vitamina C em proporção ideal para defesa celular"
     },
     beauty: {
-      icon: <Heart className="h-10 w-10 text-juvelina-emerald" />,
+      icon: <Heart className="h-10 w-10 text-juvelina-gold" />,
       title: "Beleza Radiante",
       description: "Colágeno peptídico, Biotina e Vitamina E trabalham juntos para promover pele firme, cabelos fortes e unhas saudáveis, revelando sua beleza natural.",
       image: "https://images.unsplash.com/photo-1614194248104-73b258197987?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8YmVhdXR5JTIwc2tpbnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
@@ -33,7 +33,7 @@ const BenefitsSection: React.FC = () => {
       solution: "Colágeno peptídico e Biotina de alta absorção para nutrição interna"
     },
     absorption: {
-      icon: <Droplets className="h-10 w-10 text-juvelina-emerald" />,
+      icon: <Droplets className="h-10 w-10 text-juvelina-gold" />,
       title: "Absorção Superior",
       description: "Nossa fórmula líquida permite absorção até 5x maior que cápsulas tradicionais, garantindo que cada nutriente seja aproveitado ao máximo pelo seu organismo.",
       image: "https://images.unsplash.com/photo-1568430462989-44163eb1752f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bGlxdWlkJTIwZHJvcHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60",
@@ -62,6 +62,20 @@ const BenefitsSection: React.FC = () => {
     }
   };
 
+  // Indicador de scroll lateral para mobile - CORRIGIDO
+  const scrollIndicatorVariants = {
+    initial: { opacity: 0.7 },
+    animate: { 
+      opacity: [0.7, 1, 0.7],
+      x: [0, 10, 0],
+      transition: { 
+        duration: 2,
+        repeat: Infinity,
+        repeatType: "reverse" as const  // Corrigido com tipo explícito
+      }
+    }
+  };
+
   return (
     <section id="beneficios" className="py-20 bg-gradient-to-b from-white to-juvelina-mint/10 relative overflow-hidden">
       {/* Background decorativo */}
@@ -83,22 +97,37 @@ const BenefitsSection: React.FC = () => {
           </p>
         </div>
         
-        {/* Tabs de navegação */}
-        <div className="flex justify-center mb-12 overflow-x-auto hide-scrollbar">
-          <div className="inline-flex bg-gray-100 rounded-full p-1">
+        {/* Tabs de navegação melhoradas */}
+        <div className="flex flex-col items-center mb-12">
+          {/* Indicador de scroll horizontal para mobile */}
+          <div className="md:hidden mb-4 flex items-center gap-2 text-juvelina-gold">
+            <motion.div
+              variants={scrollIndicatorVariants}
+              initial="initial"
+              animate="animate"
+              className="flex items-center"
+            >
+              <span className="text-sm">Deslize</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </motion.div>
+          </div>
+          
+          <div className="inline-flex bg-white shadow-md rounded-full p-1 overflow-x-auto hide-scrollbar max-w-full">
             {Object.entries(benefits).map(([key, benefit]) => (
               <button
                 key={key}
-                className={`px-6 py-2 rounded-full transition-all ${
+                className={`px-5 py-2.5 rounded-full transition-all whitespace-nowrap ${
                   activeTab === key
-                    ? 'bg-juvelina-emerald text-white shadow-md'
-                    : 'text-gray-700 hover:bg-gray-200'
+                    ? 'bg-juvelina-gold text-white shadow-md'
+                    : 'text-gray-700 hover:bg-juvelina-mint/20'
                 }`}
                 onClick={() => setActiveTab(key)}
               >
-                <div className="flex items-center gap-2 whitespace-nowrap">
+                <div className="flex items-center gap-2">
                   {React.cloneElement(benefit.icon, {
-                    className: `h-4 w-4 ${activeTab === key ? 'text-white' : 'text-juvelina-emerald'}`
+                    className: `h-4 w-4 ${activeTab === key ? 'text-white' : 'text-juvelina-gold'}`
                   })}
                   <span>{benefit.title}</span>
                 </div>
