@@ -1,62 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
-
-/* Fallback para as fontes */
-@font-face {
-  font-family: 'Ws Paradose';
-  src: url('https://fonts.cdnfonts.com/s/17860/WS-Paradose.woff') format('woff'),
-       local('Georgia'), serif;
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Zap';
-  src: url('https://fonts.cdnfonts.com/s/12118/zap-light.woff') format('woff'),
-       local('Poppins'), sans-serif;
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* src/index.css */
-
-/* Importação de fontes - Use caminhos relativos ao projeto ou CDNs mais confiáveis */
+/* Importação de fontes */
 @font-face {
   font-family: 'Ws Paradose';
-  src: url('/fonts/WS-Paradose.woff') format('woff');
+  src: url('https://fonts.cdnfonts.com/s/17860/WS-Paradose.woff') format('woff');
   font-weight: normal;
   font-style: italic;
-  font-display: swap; /* Melhora o carregamento */
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('/fonts/zap-light.woff') format('woff');
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-light.woff') format('woff');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('/fonts/zap-regular.woff') format('woff');
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-regular.woff') format('woff');
   font-weight: bold;
   font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('/fonts/zap-light-italic.woff') format('woff');
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-light-italic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
-  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-italic.woff') format('woff');
+  font-weight: bold;
+  font-style: italic;
 }
 
 /* Estilos base */
@@ -94,6 +74,43 @@
   button, a {
     transition: all 0.3s ease;
   }
+  
+  /* Componentes reutilizáveis */
+  .section-container {
+    @apply container mx-auto px-4 py-16 md:py-24 relative z-10;
+  }
+  
+  .heading-primary {
+    @apply text-4xl md:text-5xl font-['Ws_Paradose'] leading-tight;
+  }
+  
+  .heading-secondary {
+    @apply text-3xl md:text-4xl font-['Ws_Paradose'] mb-4;
+  }
+  
+  .section-badge {
+    @apply inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-gold font-medium mb-4;
+  }
+  
+  .badge-accent {
+    @apply inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-emerald font-medium mb-4;
+  }
+  
+  .card-base {
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-5;
+  }
+  
+  .card-testimonial {
+    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 p-5;
+  }
+  
+  .button-primary {
+    @apply bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-juvelina-gold/90 transition font-medium;
+  }
+  
+  .button-secondary {
+    @apply bg-white text-juvelina-gold border border-juvelina-gold px-6 py-3 rounded-full hover:bg-juvelina-mint/10 transition font-medium;
+  }
 }
 
 /* Utilitários personalizados */
@@ -119,6 +136,11 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.95); }
@@ -139,6 +161,10 @@
 
   .animate-fadeInUp {
     animation: fadeInUp 0.7s ease-out forwards;
+  }
+  
+  .animate-fadeInDown {
+    animation: fadeInDown 0.7s ease-out forwards;
   }
 
   .animate-scaleIn {
@@ -165,8 +191,6 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  
 
 /* Adicione ao seu index.css */
 html, body {
@@ -207,145 +231,4 @@ table {
   margin-right: auto;
   margin-left: auto;
 }
-
-/* Adicione essas classes ao seu arquivo index.css para garantir suporte aos novos backgrounds */
-
-/* Gradientes modernos */
-.bg-gradient-radial {
-  background-image: radial-gradient(var(--tw-gradient-stops));
-}
-
-.bg-gradient-conic {
-  background-image: conic-gradient(var(--tw-gradient-stops));
-}
-
-/* Efeitos de fundo para Juvelina */
-.bg-juvelina-ethereal {
-  background: linear-gradient(120deg, rgba(255, 253, 244, 0.8) 0%, rgba(255, 255, 255, 0.9) 50%, rgba(194, 247, 188, 0.1) 100%);
-}
-
-.juvelina-glow {
-  position: relative;
-}
-
-.juvelina-glow::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(169, 104, 61, 0.1), transparent 70%);
-  z-index: -1;
-}
-
-.juvelina-glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* Efeitos de texto */
-.text-shadow-gold {
-  text-shadow: 0 0 10px rgba(169, 104, 61, 0.3);
-}
-
-/* Animações específicas */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0),
-    rgba(169, 104, 61, 0.2),
-    rgba(255, 255, 255, 0)
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite;
-}
-
-/* Efeito de blobs suaves para fundos orgânicos */
-.blob-animation {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.4;
-  mix-blend-mode: overlay;
-  animation: blob-pulse 10s ease-in-out infinite alternate;
-}
-
-@keyframes blob-pulse {
-  0% {
-    transform: scale(1) translate(0, 0);
-  }
-  33% {
-    transform: scale(1.1) translate(5%, 5%);
-  }
-  66% {
-    transform: scale(0.9) translate(-5%, 5%);
-  }
-  100% {
-    transform: scale(1) translate(0, 0);
-  }
-}
-
-/* Cor de background com textura sutil */
-.bg-texture {
-  background-color: #fdfdfc;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cg fill='%23a9683d' fill-opacity='0.03'%3E%3Cpath d='M20 0c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20zm0 36c-8.836 0-16-7.164-16-16s7.164-16 16-16 16 7.164 16 16-7.164 16-16 16z'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* Efeito de luz dourada */
-.gold-light {
-  position: relative;
-  overflow: hidden;
-}
-
-.gold-light::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle at center,
-    rgba(169, 104, 61, 0.15) 0%,
-    rgba(194, 247, 188, 0.05) 30%,
-    transparent 70%
-  );
-  opacity: 0.7;
-  transform: rotate(30deg);
-}
-
-@layer components {
-  .section-container {
-    @apply container mx-auto px-4 py-16 md:py-24 relative z-10;
-  }
-  
-  .heading-primary {
-    @apply text-4xl md:text-5xl font-['Ws_Paradose'] leading-tight;
-  }
-  
-  .heading-secondary {
-    @apply text-3xl md:text-4xl font-['Ws_Paradose'] mb-4;
-  }
-  
-  .section-badge {
-    @apply inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-gold font-medium mb-4;
-  }
-  
-  .button-primary {
-    @apply bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition shadow-md;
-  }
-  
-  .button-secondary {
-    @apply bg-white text-juvelina-gold border border-juvelina-gold px-6 py-3 rounded-full hover:bg-juvelina-mint/10 transition shadow-sm;
-  }
-}
-
 }
