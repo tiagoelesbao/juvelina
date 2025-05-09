@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Share2, Heart, MessageCircle, Camera, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
-import TikTokIcon from '../ui/TikTokIcon';
+import TikTokIcon from '../../components/ui/TikTokIcon';
 
 const UGCGallerySection: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
@@ -148,9 +148,6 @@ const UGCGallerySection: React.FC = () => {
     { id: 'all', label: 'Todos' },
     { id: 'instagram', label: 'Instagram' },
     { id: 'tiktok', label: 'TikTok' },
-    { id: 'energy', label: 'Energia' },
-    { id: 'beauty', label: 'Beleza' },
-    { id: 'immunity', label: 'Imunidade' }
   ];
   
   const [activeCategory, setActiveCategory] = useState('all');

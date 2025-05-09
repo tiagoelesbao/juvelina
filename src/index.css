@@ -74,6 +74,43 @@
   button, a {
     transition: all 0.3s ease;
   }
+  
+  /* Componentes reutilizáveis */
+  .section-container {
+    @apply container mx-auto px-4 py-16 md:py-24 relative z-10;
+  }
+  
+  .heading-primary {
+    @apply text-4xl md:text-5xl font-['Ws_Paradose'] leading-tight;
+  }
+  
+  .heading-secondary {
+    @apply text-3xl md:text-4xl font-['Ws_Paradose'] mb-4;
+  }
+  
+  .section-badge {
+    @apply inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-gold font-medium mb-4;
+  }
+  
+  .badge-accent {
+    @apply inline-block bg-juvelina-mint bg-opacity-30 px-4 py-1 rounded-full text-juvelina-emerald font-medium mb-4;
+  }
+  
+  .card-base {
+    @apply bg-white rounded-lg shadow-md hover:shadow-lg transition-all p-5;
+  }
+  
+  .card-testimonial {
+    @apply bg-white rounded-xl shadow-md hover:shadow-xl transition duration-300 p-5;
+  }
+  
+  .button-primary {
+    @apply bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-juvelina-gold/90 transition font-medium;
+  }
+  
+  .button-secondary {
+    @apply bg-white text-juvelina-gold border border-juvelina-gold px-6 py-3 rounded-full hover:bg-juvelina-mint/10 transition font-medium;
+  }
 }
 
 /* Utilitários personalizados */
@@ -99,6 +136,11 @@
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   @keyframes scaleIn {
     from { opacity: 0; transform: scale(0.95); }
@@ -119,6 +161,10 @@
 
   .animate-fadeInUp {
     animation: fadeInUp 0.7s ease-out forwards;
+  }
+  
+  .animate-fadeInDown {
+    animation: fadeInDown 0.7s ease-out forwards;
   }
 
   .animate-scaleIn {

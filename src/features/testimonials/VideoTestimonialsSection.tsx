@@ -1,7 +1,7 @@
 // src/components/sections/VideoTestimonialsSection.tsx - IMPROVED VERSION
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import VideoCarousel from '../ui/VideoCarousel';
+import VideoCarousel from '../../components/ui/VideoCarousel';
 
 // Dados de exemplo de vídeo depoimentos
 const videoTestimonials = [
@@ -121,7 +121,7 @@ const VideoTestimonialsSection: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('todos');
 
   return (
-    <section id="video-depoimentos" className="py-20 bg-gradient-to-r from-juvelina-gold/5 to-juvelina-mint/10 relative overflow-hidden">
+    <section id="video-depoimentos" className="py-20 bg-gradient-to-b from-juvelina-mint/20 to-white relative overflow-hidden">
       {/* Padrão de fundo sutil */}
       <div className="absolute inset-0 opacity-5" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 17.32v34.64L30 60 0 51.96V17.32L30 0zm0 10.39L8.66 22.17v26.66L30 60l21.34-11.17V22.17L30 10.39z' fill='%23A9683D' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`,

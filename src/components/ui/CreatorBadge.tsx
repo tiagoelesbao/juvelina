@@ -1,8 +1,6 @@
-// src/components/ui/CreatorBadge.tsx - CORRECTED VERSION
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Instagram, CheckCircle, Star } from 'lucide-react';
-import TikTokIcon from './TikTokIcon';
+import { Instagram, CheckCircle } from 'lucide-react';
 
 interface Creator {
   id: number;
@@ -58,17 +56,17 @@ const CreatorBadge: React.FC = () => {
     }
   ];
   
-  // Mostra o badge após um delay maior e alterna entre creators com intervalo maior
+  // Mostra o badge após um delay maior e alterna entre creators
   useEffect(() => {
     // Não mostrar notificações se o usuário fechou manualmente
     if (badgeClosed) return;
     
-    // Mostrar o badge após 25 segundos (aumentado de 20s para 25s)
+    // Mostrar o badge após 25 segundos
     const timer = setTimeout(() => {
       setShowBadge(true);
     }, 25000);
     
-    // Mudar de creator a cada 12 segundos (aumentado de 8s para 12s)
+    // Mudar de creator a cada 12 segundos
     const interval = setInterval(() => {
       if (showBadge) {
         setActiveCreator(prev => (prev + 1) % creators.length);
@@ -81,15 +79,20 @@ const CreatorBadge: React.FC = () => {
     };
   }, [showBadge, creators.length, badgeClosed]);
   
-  // Renderiza as estrelas de avaliação
   const renderStars = (rating: number) => (
     <div className="flex">
       {[...Array(5)].map((_, i) => (
-        <Star 
-          key={i} 
-          size={10} 
-          className={i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}
-        />
+        <svg
+          key={i}
+          xmlns="http://www.w3.org/2000/svg"
+          className={`h-3 w-3 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z"
+          />
+        </svg>
       ))}
     </div>
   );
@@ -123,7 +126,12 @@ const CreatorBadge: React.FC = () => {
                     {creators[activeCreator].platform === 'instagram' ? (
                       <Instagram size={10} />
                     ) : (
-                      <TikTokIcon size={10} />
+                      <svg width={10} height={10} viewBox="0 0 24 24" fill="none" className="text-black">
+                        <path 
+                          d="M19.321 7.29152C19.2009 7.24373 19.0824 7.19334 18.9658 7.14033C18.5148 6.94291 18.0986 6.67955 17.738 6.36103C16.9266 5.55089 16.5941 4.72224 16.4558 4.09283H16.4592C16.3465 3.58604 16.3465 3.22694 16.3465 3.22694H14.3077V15.6381C14.3077 15.8549 14.3077 16.0683 14.2917 16.2783C14.2917 16.2885 14.2901 16.2971 14.2884 16.3072C14.2884 16.3106 14.2884 16.314 14.2867 16.3175C14.2217 16.7273 14.0342 17.1065 13.7503 17.4064C13.4664 17.7064 13.0991 17.9131 12.6929 18.0022C12.5299 18.0393 12.3632 18.0581 12.1957 18.0581C11.2312 18.0581 10.447 17.3818 10.2881 16.4922C10.2725 16.4176 10.2621 16.3413 10.257 16.2646C10.2518 16.2007 10.2518 16.1368 10.2518 16.0729V16.0183V2.93576H8.20456V3.96047V4.4456V16.0183C8.20456 16.1368 8.20456 16.2532 8.21153 16.3696C8.21502 16.4456 8.22199 16.5217 8.23245 16.5971C8.23593 16.6216 8.24116 16.6445 8.24639 16.6689C8.46582 18.2348 9.84213 19.4571 11.5014 19.5737C11.7273 19.5909 11.9563 19.5943 12.1853 19.5806C12.4178 19.5669 12.6485 19.5362 12.874 19.4886C13.1164 19.4384 13.3553 19.3674 13.5875 19.276C14.5851 18.8866 15.3796 18.1114 15.7517 17.1134C15.9393 16.6291 16.0428 16.1 16.0428 15.554V15.554V15.5471V10.0775V8.37581V7.99304C16.6626 8.34316 17.3536 8.58358 18.0734 8.69702C18.482 8.76577 18.8974 8.80082 19.321 8.80082V6.78789C19.321 6.78789 19.321 7.32837 19.321 7.29152Z" 
+                          fill="currentColor"
+                        />
+                      </svg>
                     )}
                     <span>{creators[activeCreator].handle}</span>
                     <span className="text-juvelina-gold">• {creators[activeCreator].followers}</span>
@@ -135,7 +143,7 @@ const CreatorBadge: React.FC = () => {
                 className="text-gray-400 hover:text-gray-600"
                 onClick={() => {
                   setShowBadge(false);
-                  setBadgeClosed(true); // Marca como fechado permanentemente até recarregar
+                  setBadgeClosed(true);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">

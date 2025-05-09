@@ -1,28 +1,29 @@
-// src/App.tsx - Versão refatorada com técnicas avançadas de conversão
-import { useState, useEffect, useRef, createContext } from 'react';
-import { ShoppingCart, Menu, X, ArrowUp, Bell, Globe, Sparkles, User, Star } from 'lucide-react';
+// src/App.tsx
+import { useState, useEffect, useRef, createContext, Suspense, lazy } from 'react';
+import { ShoppingCart, Menu, X, ArrowUp, Globe } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 
-// Componentes de seções
-import HeroSection from './components/sections/HeroSection';
-import BenefitsSection from './components/sections/BenefitsSection';
-import AbsorptionSection from './components/sections/AbsorptionSection';
-// import TestimonialsSection from './components/sections/TestimonialsSection';
-import PricingSection from './components/sections/PricingSection';
-import FaqSection from './components/sections/FaqSection';
-import GuaranteeSection from './components/sections/GuaranteeSection';
-import Footer from './components/Footer';
-import VideoTestimonialsSection from './components/sections/VideoTestimonialsSection';
-import UGCGallerySection from './components/sections/UGCGallerySection';
-import ViralTestimonialsSection from './components/sections/ViralTestimonialsSection';
-import ViralOfferSection from './components/sections/ViralOfferSection';
-
-// Componentes de UI
-import PurchaseModal from './components/modals/PurchaseModal';
-import IngredientsList from './components/IngredientsList';
-import CreatorBadge from './components/ui/CreatorBadge';
-// import TikTokIcon from './components/ui/TikTokIcon';
+// Componentes de UI e hooks carregados imediatamente
+import HeroSection from './features/hero/index';
+import Footer from './components/layout/Footer';
+import LoadingSection from './components/ui/LoadingSection';
 import ScrollProgressBar from './components/ui/ScrollProgressBar';
+import CreatorBadge from './components/ui/CreatorBadge';
+import { useModalState } from './hooks/useModalState';
+import { useSocialProof } from './hooks/useSocialProof';
+
+// Lazy loading de componentes de seção
+const BenefitsSection = lazy(() => import('./features/benefits/BenefitsSection'));
+const AbsorptionSection = lazy(() => import('./features/benefits/AbsorptionSection'));
+const VideoTestimonialsSection = lazy(() => import('./features/testimonials/VideoTestimonialsSection'));
+const UGCGallerySection = lazy(() => import('./features/testimonials/UGCGallerySection'));
+const ViralTestimonialsSection = lazy(() => import('./features/testimonials/ViralTestimonialsSection'));
+const GuaranteeSection = lazy(() => import('./features/testimonials/GuaranteeSection'));
+const ViralOfferSection = lazy(() => import('./features/pricing/ViralOfferSection'));
+const PricingSection = lazy(() => import('./features/pricing/PricingSection'));
+const FaqSection = lazy(() => import('./features/testimonials/FaqSection'));
+const PurchaseModal = lazy(() => import('./components/common/PurchaseModal'));
+const IngredientsList = lazy(() => import('./components/common/IngredientsList'));
 
 // Definir o contexto da aplicação
 export const AppContext = createContext<{
@@ -43,43 +44,17 @@ export const AppContext = createContext<{
   }
 });
 
-// Tipos para Social Proof
-interface SocialProof {
-  id: number;
-  name: string;
-  avatar: string;
-  action: string;
-  time: string;
-  location: string;
-}
-
-interface Notification {
-  id: number;
-  type: 'purchase' | 'review' | 'stock' | 'discount';
-  message: string;
-  timestamp: number;
-}
-
 function App() {
-  // Estado do modal de compra
-  const [showModal, setShowModal] = useState(false);
-  const [modalVariant, setModalVariant] = useState<'default' | 'exit-intent' | 'time-based'>('default');
-  
-  // Estado do menu mobile
+  // Estado de UI
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  // Estados de UI
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lastActiveSection, setLastActiveSection] = useState<string>('hero');
-  const [showWelcomeTooltip, setShowWelcomeTooltip] = useState(false);
   
-  // Estados de notificações e social proof
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showNotification, setShowNotification] = useState<number | null>(null);
-  const [activeSocialProof, setActiveSocialProof] = useState<number | null>(null);
+  // Hooks personalizados para gerenciar estados complexos
+  const { showModal, modalVariant, openModal, closeModal } = useModalState('default');
+  const { activeSocialProof, socialProofs } = useSocialProof();
   
   // Estados de urgência e escassez
   const [discountTimer, setDiscountTimer] = useState({
@@ -87,8 +62,7 @@ function App() {
     minutes: 59,
     seconds: 59
   });
-  const [stockCount, setStockCount] = useState(54);
-  const [visitorsCount, setVisitorsCount] = useState(Math.floor(Math.random() * 15) + 20);
+  const [stockCount] = useState(54);
   
   // Referências para elementos DOM
   const appRef = useRef<HTMLDivElement>(null);
@@ -128,42 +102,6 @@ function App() {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
   
-  // Dados de social proof
-  const socialProofs: SocialProof[] = [
-    {
-      id: 1,
-      name: "Julia Ribeiro",
-      avatar: "https://images.unsplash.com/photo-1619785292559-a15caa28bde6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80",
-      action: "acabou de comprar Juvelina",
-      time: "agora mesmo",
-      location: "São Paulo, SP"
-    },
-    {
-      id: 2,
-      name: "Marcos Almeida",
-      avatar: "https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      action: "assinou o plano mensal",
-      time: "há 2 minutos",
-      location: "Rio de Janeiro, RJ"
-    },
-    {
-      id: 3,
-      name: "Fernanda Costa",
-      avatar: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
-      action: "comprou o kit 3 meses",
-      time: "há 5 minutos",
-      location: "Belo Horizonte, MG"
-    },
-    {
-      id: 4,
-      name: "Pedro Henrique",
-      avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
-      action: "deixou uma avaliação 5 estrelas",
-      time: "há 10 minutos",
-      location: "Curitiba, PR"
-    }
-  ];
-  
   // Configuração do timer de desconto
   useEffect(() => {
     const timer = setInterval(() => {
@@ -182,37 +120,6 @@ function App() {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, []);
-  
-  // Simulação de variação de estoque
-  useEffect(() => {
-    const stockTimer = setInterval(() => {
-      const randomReduction = Math.floor(Math.random() * 2) + 1;
-      
-      setStockCount(prev => {
-        if (prev <= 10) {
-          return Math.floor(Math.random() * 30) + 40;
-        }
-        return prev - randomReduction;
-      });
-    }, 60000); // A cada minuto
-    
-    return () => clearInterval(stockTimer);
-  }, []);
-  
-  // Simulação de visitantes ativos
-  useEffect(() => {
-    const visitorsTimer = setInterval(() => {
-      setVisitorsCount(prev => {
-        // Gera uma mudança aleatória entre -2 e +3
-        const change = Math.floor(Math.random() * 6) - 2;
-        
-        // Garantir que o número não fique abaixo de 18 ou acima de 40
-        return Math.max(18, Math.min(40, prev + change));
-      });
-    }, 10000); // Atualiza a cada 10 segundos
-    
-    return () => clearInterval(visitorsTimer);
   }, []);
   
   // Monitorar tempo de visita do usuário
@@ -256,20 +163,6 @@ function App() {
           if (currentPosition > sectionTop && currentPosition <= sectionTop + sectionHeight) {
             if (lastActiveSection !== sectionId) {
               setLastActiveSection(sectionId);
-              
-              // Adicionar interesse com base na seção visualizada
-              if (['beneficios', 'absorpcao', 'imunidade', 'beleza', 'energia'].includes(sectionId)) {
-                setUserStats(prev => {
-                  const newInterests = [...prev.interests];
-                  if (!newInterests.includes(sectionId)) {
-                    newInterests.push(sectionId);
-                  }
-                  return { ...prev, interests: newInterests };
-                });
-              }
-              
-              // Eventos para analytics (simulada)
-              console.log(`[Analytics] Visualizando seção: ${sectionId} - Tempo: ${userStats.visitTime}s`);
             }
           }
         });
@@ -279,158 +172,11 @@ function App() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastActiveSection, userStats.visitTime]);
-  
-  // Detectar intent de saída
-  useEffect(() => {
-    // Não mostrar intent de saída imediatamente
-    const minTimeBeforeIntent = 20000; // 20 segundos
-    
-    // Só mostramos o intent de saída após algum tempo
-    if (exitIntentShown || userStats.visitTime * 1000 < minTimeBeforeIntent) return;
-    
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY < 5 && !exitIntentShown && userStats.visitTime * 1000 >= minTimeBeforeIntent) {
-        setExitIntentShown(true);
-        setModalVariant('exit-intent');
-        setShowModal(true);
-        
-        // Eventos para analytics
-        console.log('[Analytics] Exit intent detectado - Tempo: ' + userStats.visitTime + 's');
-      }
-    };
-    
-    document.addEventListener('mouseleave', handleMouseLeave);
-    
-    return () => {
-      document.removeEventListener('mouseleave', handleMouseLeave);
-    };
-  }, [exitIntentShown, userStats.visitTime]);
-  
-  // Timer para mostrar popup baseado no tempo
-  useEffect(() => {
-    // Mostrar modal após 60 segundos se o usuário não interagiu com a oferta
-    const timeThreshold = 60; // 60 segundos
-    
-    if (!showModal && !exitIntentShown && userStats.visitTime >= timeThreshold) {
-      const shouldShowTimeBasedModal = Math.random() < 0.7; // 70% de chance
-      
-      if (shouldShowTimeBasedModal) {
-        setModalVariant('time-based');
-        setShowModal(true);
-        
-        // Eventos para analytics
-        console.log('[Analytics] Modal baseado no tempo exibido - Tempo: ' + userStats.visitTime + 's');
-      }
-    }
-  }, [userStats.visitTime, showModal, exitIntentShown]);
-  
-  // Gerenciar social proofs
-  useEffect(() => {
-    // Mostrar primeiro social proof após 15 segundos
-    const initialTimer = setTimeout(() => {
-      setActiveSocialProof(0);
-    }, 15000);
-    
-    // Rotacionar social proofs
-    const interval = setInterval(() => {
-      if (activeSocialProof !== null) {
-        setActiveSocialProof(prev => prev !== null ? (prev + 1) % socialProofs.length : 0);
-      }
-    }, 8000);
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, [activeSocialProof]);
-  
-  // Gerenciar notificações
-  useEffect(() => {
-    // Criar algumas notificações para mostrar ao longo do tempo
-    const createNotifications = () => {
-      const newNotifications: Notification[] = [
-        {
-          id: 1,
-          type: 'purchase',
-          message: 'Alguém acabou de comprar Juvelina Organics',
-          timestamp: Date.now() + 25000 // 25 segundos após carregar
-        },
-        {
-          id: 2,
-          type: 'stock',
-          message: 'Restam apenas poucas unidades em estoque!',
-          timestamp: Date.now() + 40000 // 40 segundos após carregar
-        },
-        {
-          id: 3,
-          type: 'discount',
-          message: 'Oferta especial: 30% OFF por tempo limitado!',
-          timestamp: Date.now() + 60000 // 60 segundos após carregar
-        },
-        {
-          id: 4,
-          type: 'review',
-          message: 'Amanda acabou de avaliar Juvelina com 5 estrelas!',
-          timestamp: Date.now() + 90000 // 90 segundos após carregar
-        }
-      ];
-      
-      setNotifications(newNotifications);
-    };
-    
-    createNotifications();
-    
-    // Verifica a cada segundo quais notificações devem ser exibidas
-    const notificationChecker = setInterval(() => {
-      const currentTime = Date.now();
-      
-      // Encontrar a próxima notificação a ser mostrada
-      const nextNotification = notifications.find(
-        notif => notif.timestamp <= currentTime && (showNotification !== notif.id)
-      );
-      
-      if (nextNotification) {
-        setShowNotification(nextNotification.id);
-        
-        // Esconde a notificação após 5 segundos
-        setTimeout(() => {
-          setShowNotification(null);
-          
-          // Reagenda esta notificação para aparecer novamente mais tarde
-          setNotifications(prev => 
-            prev.map(n => 
-              n.id === nextNotification.id 
-                ? { ...n, timestamp: Date.now() + (Math.random() * 120000 + 60000) } 
-                : n
-            )
-          );
-        }, 5000);
-      }
-    }, 1000);
-    
-    return () => clearInterval(notificationChecker);
-  }, [notifications, showNotification]);
-  
-  // Mostrar tooltip de boas-vindas inicial
-  useEffect(() => {
-    // Mostrar tooltip de boas-vindas após 2 segundos
-    const welcomeTimer = setTimeout(() => {
-      setShowWelcomeTooltip(true);
-      
-      // Esconder após 7 segundos
-      setTimeout(() => {
-        setShowWelcomeTooltip(false);
-      }, 7000);
-    }, 2000);
-    
-    return () => clearTimeout(welcomeTimer);
-  }, []);
+  }, [lastActiveSection]);
   
   // Função para abrir o modal de compra
   const handleOpenPurchaseModal = () => {
-    setModalVariant('default');
-    setShowModal(true);
+    openModal('default');
     
     // Eventos para analytics
     console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
@@ -465,28 +211,7 @@ function App() {
       if (mobileMenuOpen) {
         setMobileMenuOpen(false);
       }
-      
-      // Rastreamento de navegação
-      console.log(`[Analytics] Navegação para seção: ${sectionId} - Tempo: ${userStats.visitTime}s`);
     }
-  };
-  
-  // Personalizar conteúdo baseado em interesses do usuário
-  const getPersonalizedCTA = () => {
-    // Se o usuário mostrou interesse em beleza
-    if (userStats.interests.includes('beleza')) {
-      return "Transforme Sua Beleza com Juvelina";
-    }
-    // Se o usuário mostrou interesse em energia
-    else if (userStats.interests.includes('energia')) {
-      return "Potencialize Sua Energia com Juvelina";
-    }
-    // Se o usuário mostrou interesse em imunidade
-    else if (userStats.interests.includes('imunidade')) {
-      return "Fortaleça Sua Imunidade com Juvelina";
-    }
-    // Padrão
-    return "Transforme Sua Saúde com Juvelina";
   };
   
   return (
@@ -539,128 +264,6 @@ function App() {
             </motion.div>
           )}
         </AnimatePresence>
-        
-        {/* Notificações do sistema */}
-        <AnimatePresence>
-          {showNotification !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-20 right-5 z-40 max-w-xs bg-white rounded-lg shadow-lg p-3 border-l-4 border-juvelina-gold"
-            >
-              {notifications.find(n => n.id === showNotification)?.type === 'purchase' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    <ShoppingCart size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Agora mesmo</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'stock' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600">
-                    <Bell size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Restam apenas {stockCount} unidades</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'discount' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-juvelina-gold/20 rounded-full flex items-center justify-center text-juvelina-gold">
-                    <Sparkles size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Acaba em {discountTimer.hours}h {discountTimer.minutes}m</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'review' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                    <Star size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Há poucos minutos</div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Popup de boas-vindas */}
-        <AnimatePresence>
-          {showWelcomeTooltip && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="fixed bottom-20 right-5 z-40 max-w-xs bg-white rounded-lg shadow-xl p-4 border border-juvelina-gold"
-            >
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-juvelina-gold rounded-full flex items-center justify-center text-white">
-                  <User size={20} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-800">Bem-vindo à Juvelina Organics!</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Descubra como nosso suplemento líquido pode transformar sua saúde e bem-estar.
-                  </p>
-                  <button 
-                    className="mt-2 text-sm text-juvelina-gold font-medium hover:underline"
-                    onClick={() => navigateToSection('beneficios')}
-                  >
-                    Explorar benefícios →
-                  </button>
-                </div>
-                <button 
-                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-                  onClick={() => setShowWelcomeTooltip(false)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Contador de visitantes */}
-        <div className="fixed bottom-5 right-5 z-40">
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3, duration: 0.5 }}
-              className="bg-white rounded-full py-1 px-3 shadow-md border border-gray-100 flex items-center gap-2"
-            >
-              <div className="flex -space-x-2">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-gray-200 border border-white flex items-center justify-center text-xs font-bold text-gray-600"
-                  >
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
-              <span className="text-sm text-gray-700 font-medium">
-                {visitorsCount} pessoas vendo agora
-              </span>
-            </motion.div>
-          </AnimatePresence>
-        </div>
         
         {/* Announcement Bar - Gatilho de urgência e escassez */}
         <div className="bg-juvelina-gold text-white py-2 sticky top-0 z-50">
@@ -793,49 +396,67 @@ function App() {
 
         {/* Main Content */}
         <main>
-          {/* Hero Section */}
+          {/* Hero Section - carregada imediatamente */}
           <HeroSection onCtaClick={handleOpenPurchaseModal} />
           
-          {/* Benefits Section */}
-          <BenefitsSection />
+          {/* Outras seções com lazy loading */}
+          <Suspense fallback={<LoadingSection />}>
+            <BenefitsSection />
+          </Suspense>
           
-          {/* Absorption Comparison Section */}
-          <AbsorptionSection />
+          <Suspense fallback={<LoadingSection />}>
+            <AbsorptionSection />
+          </Suspense>
           
-          {/* Video Testimonials Section */}
-          <VideoTestimonialsSection />
+          <Suspense fallback={<LoadingSection />}>
+            <VideoTestimonialsSection />
+          </Suspense>
           
-          {/* UGC Gallery Section */}
-          <UGCGallerySection />
+          <Suspense fallback={<LoadingSection />}>
+            <UGCGallerySection />
+          </Suspense>
           
-          {/* Viral Testimonials Section */}
-          <ViralTestimonialsSection />
+          <Suspense fallback={<LoadingSection />}>
+            <ViralTestimonialsSection />
+          </Suspense>
           
-          {/* Guarantee Section */}
-          <GuaranteeSection />
+          <Suspense fallback={<LoadingSection />}>
+            <GuaranteeSection />
+          </Suspense>
           
-          {/* Viral Offer Section */}
-          <ViralOfferSection onCtaClick={handleOpenPurchaseModal} />
+          <Suspense fallback={<LoadingSection />}>
+            <ViralOfferSection onCtaClick={handleOpenPurchaseModal} />
+          </Suspense>
           
-          {/* Pricing Section */}
-          <PricingSection onCtaClick={handleOpenPurchaseModal} />
+          <Suspense fallback={<LoadingSection />}>
+            <PricingSection onCtaClick={handleOpenPurchaseModal} />
+          </Suspense>
           
-          {/* FAQ Section */}
-          <FaqSection />
+          <Suspense fallback={<LoadingSection />}>
+            <FaqSection />
+          </Suspense>
         </main>
 
         {/* Footer */}
         <Footer />
 
         {/* Modals e Overlays */}
-        <PurchaseModal 
-          isOpen={showModal} 
-          onClose={() => setShowModal(false)} 
-          variant={modalVariant}
-          personalizedTitle={getPersonalizedCTA()}
-        />
+        <Suspense fallback={null}>
+          {showModal && (
+            <PurchaseModal 
+              isOpen={showModal} 
+              onClose={closeModal} 
+              variant={modalVariant}
+              personalizedTitle={getPersonalizedCTA(userStats.interests)}
+            />
+          )}
+        </Suspense>
         
-        {showIngredients && <IngredientsList onClose={() => setShowIngredients(false)} />}
+        <Suspense fallback={null}>
+          {showIngredients && (
+            <IngredientsList onClose={() => setShowIngredients(false)} />
+          )}
+        </Suspense>
         
         {/* Botão de voltar ao topo */}
         <AnimatePresence>
@@ -858,103 +479,22 @@ function App() {
   );
 }
 
-// App.tsx Social Proof Snippet - Replace the existing social proof code with this improved version
-
-// Componente para notificações de compras recentes e atividade
-const RecentPurchaseNotifications = () => {
-  const [notifications, setNotifications] = useState<Array<{
-    id: number;
-    name: string;
-    product: string;
-    time: string;
-    location: string;
-  }>>([]);
-  
-  useEffect(() => {
-    const firstNames = [
-      "Ana", "João", "Maria", "Pedro", "Julia", 
-      "Carlos", "Márcia", "Renato", "Fernanda", "Lucas",
-      "Gabriela", "Rafael", "Patricia", "Ricardo", "Camila"
-    ];
-    
-    const cities = [
-      "São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", 
-      "Curitiba, PR", "Brasília, DF", "Recife, PE", "Salvador, BA",
-      "Porto Alegre, RS", "Fortaleza, CE", "Manaus, AM"
-    ];
-    
-    const products = [
-      "Juvelina Multivitamínico", 
-      "Kit 3 Meses Juvelina", 
-      "Assinatura Mensal"
-    ];
-    
-    // Gerar notificação inicial após 15 segundos (aumentado de 10s para 15s)
-    const initialTimer = setTimeout(() => {
-      generateNotification();
-    }, 15000);
-    
-    // Configurar intervalo maior para gerar notificações (entre 30-60 segundos)
-    const interval = setInterval(() => {
-      // 40% de chance de gerar uma notificação (reduzido de 50% para 40%)
-      if (Math.random() < 0.4) {
-        generateNotification();
-      }
-    }, Math.random() * 30000 + 30000); // Entre 30s e 60s
-    
-    function generateNotification() {
-      const newNotification = {
-        id: Date.now(),
-        name: firstNames[Math.floor(Math.random() * firstNames.length)],
-        product: products[Math.floor(Math.random() * products.length)],
-        time: 'agora',
-        location: cities[Math.floor(Math.random() * cities.length)]
-      };
-      
-      setNotifications(prev => [newNotification, ...prev].slice(0, 1));
-      
-      // Remover após 7 segundos (aumentado de 5s para 7s)
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
-      }, 7000);
-    }
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, []);
-  
-  return (
-    <div className="fixed bottom-20 left-5 z-40">
-      <AnimatePresence>
-        {notifications.map(notification => (
-          <motion.div
-            key={notification.id}
-            initial={{ opacity: 0, x: -100, y: 0 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-white rounded-lg shadow-xl p-3 mb-3 border-l-4 border-green-500 max-w-xs"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm">
-                  <span className="font-medium">{notification.name}</span> de {notification.location} acabou de comprar
-                </p>
-                <p className="text-sm font-medium text-juvelina-gold">{notification.product}</p>
-                <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-// Componente de contador de visitantes ativos - movido para o componente principal
-// para melhor gerenciamento de estado e consistência
+// Título personalizado com base em interesses do usuário
+function getPersonalizedCTA(interests: string[]) {
+  // Se o usuário mostrou interesse em beleza
+  if (interests.includes('beleza')) {
+    return "Transforme Sua Beleza com Juvelina";
+  }
+  // Se o usuário mostrou interesse em energia
+  else if (interests.includes('energia')) {
+    return "Potencialize Sua Energia com Juvelina";
+  }
+  // Se o usuário mostrou interesse em imunidade
+  else if (interests.includes('imunidade')) {
+    return "Fortaleça Sua Imunidade com Juvelina";
+  }
+  // Padrão
+  return "Transforme Sua Saúde com Juvelina";
+}
 
 export default App;

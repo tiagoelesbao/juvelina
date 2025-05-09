@@ -1,4 +1,3 @@
-// src/components/ui/ScrollProgressBar.tsx
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useSpring } from 'framer-motion';
 
@@ -10,7 +9,7 @@ interface ScrollProgressBarProps {
 }
 
 const ScrollProgressBar: React.FC<ScrollProgressBarProps> = ({
-  color = '#A9683D', // Cor padrão Juvelina Gold
+  color = '#A9683D',
   height = 4,
   showPercentage = false,
   position = 'top'

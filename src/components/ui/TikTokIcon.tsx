@@ -1,4 +1,4 @@
-// src/components/ui/TikTokIcon.tsx - CORRECTED VERSION
+// src/components/ui/TikTokIcon.tsx
 import React from 'react';
 
 interface TikTokIconProps {

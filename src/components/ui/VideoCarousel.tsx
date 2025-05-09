@@ -31,6 +31,7 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
   const [isScrolling, setIsScrolling] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoTestimonial | null>(null);
+  const [loadedVideos, setLoadedVideos] = useState<number[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const autoScrollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -133,6 +134,11 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
     setSelectedVideo(testimonial);
     setShowModal(true);
     
+    // Carregar o vídeo quando o modal for aberto
+    if (!loadedVideos.includes(testimonial.id)) {
+      setLoadedVideos(prev => [...prev, testimonial.id]);
+    }
+    
     // Pausar auto-scroll enquanto o modal estiver aberto
     if (autoScrollIntervalRef.current) {
       clearInterval(autoScrollIntervalRef.current);
@@ -176,6 +182,53 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
       </div>
     </div>
   );
+
+  // Componente de thumbnail de vídeo com lazy loading
+  const VideoThumbnail = ({ testimonial }: { testimonial: VideoTestimonial }) => {
+    const isVideoLoaded = loadedVideos.includes(testimonial.id);
+    
+    return (
+      <div className="relative pb-[177.77%] h-0 bg-gray-100">
+        <img 
+          src={testimonial.videoThumbnail} 
+          alt={`Depoimento de ${testimonial.name}`} 
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
+        
+        {/* Overlay com botão de play */}
+        <div 
+          className="absolute inset-0 bg-black/30 flex items-center justify-center hover:bg-black/40 transition-all cursor-pointer"
+          onClick={() => openVideoModal(testimonial)}
+        >
+          <div className="w-14 h-14 rounded-full bg-white/80 flex items-center justify-center">
+            <Play size={26} className="text-juvelina-gold ml-1" />
+          </div>
+        </div>
+        
+        {/* Badge da plataforma */}
+        <div className="absolute top-3 right-3 bg-white/90 rounded-full p-1.5 shadow-sm">
+          {testimonial.platform === 'instagram' ? (
+            <Instagram size={16} className="text-pink-600" />
+          ) : (
+            <TikTokIcon size={16} className="text-black" />
+          )}
+        </div>
+        
+        {/* Badge da categoria */}
+        <div className="absolute top-3 left-3">
+          <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+            testimonial.category === 'energia' ? 'bg-yellow-100 text-yellow-800' :
+            testimonial.category === 'imunidade' ? 'bg-green-100 text-green-800' :
+            'bg-purple-100 text-purple-800'
+          }`}>
+            {testimonial.category === 'energia' ? 'Energia' :
+             testimonial.category === 'imunidade' ? 'Imunidade' : 'Beleza'}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="relative">
@@ -222,45 +275,9 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
                   x: 0,
                   transition: { duration: 0.3 }
                 }}
-                onClick={() => openVideoModal(testimonial)}
               >
                 {/* Thumbnail do vídeo */}
-                <div className="relative pb-[177.77%] h-0 bg-gray-100">
-                  <img 
-                    src={testimonial.videoThumbnail} 
-                    alt={`Depoimento de ${testimonial.name}`} 
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  
-                  {/* Overlay com botão de play */}
-                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center hover:bg-black/40 transition-all">
-                    <div className="w-14 h-14 rounded-full bg-white/80 flex items-center justify-center">
-                      <Play size={26} className="text-juvelina-gold ml-1" />
-                    </div>
-                  </div>
-                  
-                  {/* Badge da plataforma */}
-                  <div className="absolute top-3 right-3 bg-white/90 rounded-full p-1.5 shadow-sm">
-                    {testimonial.platform === 'instagram' ? (
-                      <Instagram size={16} className="text-pink-600" />
-                    ) : (
-                      <TikTokIcon size={16} className="text-black" />
-                    )}
-                  </div>
-                  
-                  {/* Badge da categoria */}
-                  <div className="absolute top-3 left-3">
-                    <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      testimonial.category === 'energia' ? 'bg-yellow-100 text-yellow-800' :
-                      testimonial.category === 'imunidade' ? 'bg-green-100 text-green-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
-                      {testimonial.category === 'energia' ? 'Energia' :
-                       testimonial.category === 'imunidade' ? 'Imunidade' : 'Beleza'}
-                    </div>
-                  </div>
-                </div>
+                <VideoThumbnail testimonial={testimonial} />
                 
                 {/* Informações do usuário */}
                 <div className="p-3">
@@ -355,15 +372,12 @@ const VideoCarousel: React.FC<VideoCarouselProps> = ({
             
             {/* Conteúdo do vídeo */}
             <div className="aspect-[9/16] relative flex-1 bg-black">
-              {/* Substitua isso por um iframe de vídeo real do TikTok ou Instagram quando disponível */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <iframe
-                  src={`https://www.tiktok.com/embed/video/dummy-id-${selectedVideo.id}`}
-                  className="w-full h-full"
-                  allowFullScreen
-                  title={`Depoimento de ${selectedVideo.name}`}
-                />
-              </div>
+              <iframe
+                src={`https://www.tiktok.com/embed/video/dummy-id-${selectedVideo.id}`}
+                className="w-full h-full"
+                allowFullScreen
+                title={`Depoimento de ${selectedVideo.name}`}
+              />
             </div>
             
             {/* Informações adicionais */}

@@ -2,11 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ShoppingCart, CheckCircle, AlertCircle, TrendingUp, Users, Gift } from 'lucide-react';
-import AnimatedButton from '../ui/AnimatedButton';
-import FireIcon from '../ui/FireIcon';
+import AnimatedButton from '../../components/ui/AnimatedButton';
+import FireIcon from '../../components/ui/FireIcon';
 
 interface ViralOfferSectionProps {
-  onCtaClick: () => void;
+  onCtaClick: (e?: React.MouseEvent) => void;
 }
 
 const ViralOfferSection: React.FC<ViralOfferSectionProps> = ({ onCtaClick }) => {
