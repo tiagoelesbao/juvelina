@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ShoppingCart, ChevronDown } from 'lucide-react';
+// Importando com caminho absoluto em vez de relativo
+import '../../animations.css';
 
 // Definindo a interface para as props
 interface HeroSectionProps {
@@ -76,51 +78,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
     }
   }, [inView]);
 
-  // Animação do TikTok badge
-  const tikTokBadgeAnimation = {
-    initial: { opacity: 0, y: -20 },
-    animate: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 20,
-        delay: 0.5
-      }
-    }
-  };
-
-  // Animação de pulsar para o badge - corrigido
-  const pulseAnimation = {
-    animate: { 
-      scale: [1, 1.05, 1],
-      boxShadow: [
-        "0px 4px 10px rgba(0, 0, 0, 0.1)",
-        "0px 10px 25px rgba(0, 0, 0, 0.15)",
-        "0px 4px 10px rgba(0, 0, 0, 0.1)"
-      ],
-      transition: { 
-        duration: 3, 
-        repeat: Infinity, 
-        repeatType: "reverse" as const
-      }
-    }
-  };
-
-  // Animação de flutuação para a imagem do produto - corrigido
-  const floatAnimation = {
-    animate: { 
-      y: [0, -15, 0],
-      transition: { 
-        duration: 6, 
-        repeat: Infinity, 
-        repeatType: "reverse" as const, 
-        ease: "easeInOut" 
-      }
-    }
-  };
-
   // Benefícios-chave do produto
   const benefits = [
     { 
@@ -143,7 +100,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
     }
   ];
 
-  // Formatação de números para exibição - corrigido
+  // Formatação de números para exibição
   const formatNumber = (num: number): string => {
     if (num >= 1000) {
       return `+${Math.floor(num / 1000)}mil`;
@@ -358,16 +315,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 >
                   <div className="flex flex-col items-center text-center">
                     <div className="text-2xl mb-1">{stat.icon}</div>
-                    <div 
-                      className="text-2xl md:text-3xl font-bold mb-1 text-juvelina-gold"
-                      style={{ 
-                        background: "linear-gradient(90deg, #A9683D, #D4B26A, #A9683D)",
-                        backgroundSize: "200% auto",
-                        WebkitBackgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
-                        animation: "shimmer 3s linear infinite"
-                      }}
-                    >
+                    <div className="text-2xl md:text-3xl font-bold mb-1 text-gradient-gold animate-shimmer">
                       {stat.id === 1 ? formatNumber(stat.value) : `${stat.value}${stat.id === 3 ? '%' : ''}`}
                     </div>
                     <div className="text-sm text-gray-700">{stat.label}</div>
@@ -387,14 +335,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
             {/* TikTok Badge - posicionado no topo da coluna */}
             <motion.div
               className="absolute -top-10 right-0 z-20"
-              variants={tikTokBadgeAnimation}
-              initial="initial"
-              animate="animate"
+              initial={{ opacity: 0, scale: 0.8, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
             >
               <motion.div
                 className="bg-white rounded-full shadow-xl flex items-center p-3 gap-2"
-                variants={pulseAnimation}
-                animate="animate"
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  boxShadow: [
+                    "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                    "0px 10px 25px rgba(0, 0, 0, 0.15)",
+                    "0px 4px 10px rgba(0, 0, 0, 0.1)"
+                  ]
+                }}
+                transition={{ 
+                  duration: 3, 
+                  repeat: Infinity, 
+                  repeatType: "reverse"
+                }}
                 whileHover={{ scale: 1.1, transition: { duration: 0.3 } }}
               >
                 <motion.div 
@@ -458,23 +417,27 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 }}
               />
               
-              {/* Imagem do produto - agora vamos usar uma imagem mockup adequada */}
+              {/* Imagem do produto */}
               <motion.div
                 className="relative z-10"
-                variants={floatAnimation}
-                animate="animate"
+                animate={{ 
+                  y: [0, -15, 0],
+                }}
+                transition={{ 
+                  duration: 6, 
+                  repeat: Infinity, 
+                  repeatType: "reverse", 
+                  ease: "easeInOut" 
+                }}
               >
+                {/* Usar imagem hospedada no Imgur para garantir que funcione */}
                 <img 
-                  src="/src/assets/images/juvelina-bottle.png" 
+                  src="https://i.imgur.com/Gkaa22f.png" 
                   alt="Suplemento Líquido Juvelina" 
                   className="max-w-full h-auto"
                   style={{ 
                     filter: "drop-shadow(0px 30px 60px rgba(169,104,61,0.3))",
                     transform: "scale(1.15)"
-                  }}
-                  onError={(e) => {
-                    // Fallback para imagem caso a original não carregue
-                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1607006333439-505849ef4f76?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80';
                   }}
                 />
               </motion.div>
@@ -510,7 +473,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 </motion.div>
               </motion.div>
               
-              {/* Selo de Pureza Certificada - agora melhor posicionado */}
+              {/* Selo de Pureza Certificada */}
               <motion.div
                 className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute -bottom-6 right-0"
                 style={{
@@ -543,7 +506,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 </span>
               </motion.div>
               
-              {/* Adicionando um novo selo - lado esquerdo inferior */}
+              {/* Selo adicional */}
               <motion.div
                 className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute bottom-1/3 -left-10"
                 style={{
@@ -589,16 +552,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
           <span className="text-sm text-gray-500 mt-1">Descubra Mais</span>
         </motion.div>
       </motion.div>
-
-      {/* Estilo CSS para animação de shimmer - corrigido */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes shimmer {
-            0% { background-position: 200% center; }
-            100% { background-position: -200% center; }
-          }
-        `
-      }} />
     </section>
   );
 };
