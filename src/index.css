@@ -1,42 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap');
+
+/* Fallback para as fontes */
+@font-face {
+  font-family: 'Ws Paradose';
+  src: url('https://fonts.cdnfonts.com/s/17860/WS-Paradose.woff') format('woff'),
+       local('Georgia'), serif;
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Zap';
+  src: url('https://fonts.cdnfonts.com/s/12118/zap-light.woff') format('woff'),
+       local('Poppins'), sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tailwind directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Importação de fontes */
+/* src/index.css */
+
+/* Importação de fontes - Use caminhos relativos ao projeto ou CDNs mais confiáveis */
 @font-face {
   font-family: 'Ws Paradose';
-  src: url('https://fonts.cdnfonts.com/s/17860/WS-Paradose.woff') format('woff');
+  src: url('/fonts/WS-Paradose.woff') format('woff');
   font-weight: normal;
   font-style: italic;
+  font-display: swap; /* Melhora o carregamento */
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('https://fonts.cdnfonts.com/s/12118/zap-light.woff') format('woff');
+  src: url('/fonts/zap-light.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('https://fonts.cdnfonts.com/s/12118/zap-regular.woff') format('woff');
+  src: url('/fonts/zap-regular.woff') format('woff');
   font-weight: bold;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'Zap';
-  src: url('https://fonts.cdnfonts.com/s/12118/zap-light-italic.woff') format('woff');
+  src: url('/fonts/zap-light-italic.woff') format('woff');
   font-weight: normal;
   font-style: italic;
-}
-
-@font-face {
-  font-family: 'Zap';
-  src: url('https://fonts.cdnfonts.com/s/12118/zap-italic.woff') format('woff');
-  font-weight: bold;
-  font-style: italic;
+  font-display: swap;
 }
 
 /* Estilos base */

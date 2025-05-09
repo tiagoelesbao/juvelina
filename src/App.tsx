@@ -1,4 +1,4 @@
-// src/App.tsx - Versão refatorada com técnicas avançadas de conversão
+// src/App.tsx - Correção para problemas de modal piscando e não fechando
 import { useState, useEffect, useRef, createContext } from 'react';
 import { ShoppingCart, Menu, X, ArrowUp, Bell, Globe, Sparkles, User, Star } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
@@ -7,7 +7,6 @@ import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import HeroSection from './components/sections/HeroSection';
 import BenefitsSection from './components/sections/BenefitsSection';
 import AbsorptionSection from './components/sections/AbsorptionSection';
-// import TestimonialsSection from './components/sections/TestimonialsSection';
 import PricingSection from './components/sections/PricingSection';
 import FaqSection from './components/sections/FaqSection';
 import GuaranteeSection from './components/sections/GuaranteeSection';
@@ -21,7 +20,6 @@ import ViralOfferSection from './components/sections/ViralOfferSection';
 import PurchaseModal from './components/modals/PurchaseModal';
 import IngredientsList from './components/IngredientsList';
 import CreatorBadge from './components/ui/CreatorBadge';
-// import TikTokIcon from './components/ui/TikTokIcon';
 import ScrollProgressBar from './components/ui/ScrollProgressBar';
 
 // Definir o contexto da aplicação
@@ -65,7 +63,10 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [modalVariant, setModalVariant] = useState<'default' | 'exit-intent' | 'time-based'>('default');
   const [exitIntentShown, setExitIntentShown] = useState(false);
-  const [modalClosedByUser, setModalClosedByUser] = useState(false);
+  
+  // Novo estado para controlar se modal foi fechado pelo usuário
+  // mas ele ainda deve poder reabrir manualmente
+  const [autoModalDisabled, setAutoModalDisabled] = useState(false);
   
   // Estado do menu mobile
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -94,6 +95,10 @@ function App() {
   // Referências para elementos DOM
   const appRef = useRef<HTMLDivElement>(null);
   
+  // Referência para controlar a estabilidade do modal
+  const modalStable = useRef<boolean>(false);
+  const modalOpenTimestamp = useRef<number>(0);
+  
   // Scroll progress com Framer Motion
   const { scrollYProgress } = useScroll();
   useSpring(scrollYProgress, {
@@ -111,10 +116,10 @@ function App() {
     deviceType: 'desktop'
   });
   
-  // Efeito para verificar se o modal já foi fechado pelo usuário anteriormente
+  // Efeito para verificar se a exibição automática do modal está desativada
   useEffect(() => {
-    const wasModalClosed = localStorage.getItem('juvelina_modal_closed') === 'true';
-    setModalClosedByUser(wasModalClosed);
+    const isAutoDisabled = localStorage.getItem('juvelina_auto_modal_disabled') === 'true';
+    setAutoModalDisabled(isAutoDisabled);
   }, []);
 
   // Determinar tipo de dispositivo
@@ -170,6 +175,24 @@ function App() {
       location: "Curitiba, PR"
     }
   ];
+  
+  // Efeito para estabilizar o modal e evitar fechamentos rápidos acidentais
+  useEffect(() => {
+    if (showModal) {
+      // Marcamos o timestamp de quando o modal foi aberto
+      modalOpenTimestamp.current = Date.now();
+      // O modal ainda não está estável
+      modalStable.current = false;
+      
+      // Definimos um timer para considerar o modal estável após 600ms
+      // Isso impede fechamentos acidentais durante a animação
+      const stabilizeTimer = setTimeout(() => {
+        modalStable.current = true;
+      }, 600);
+      
+      return () => clearTimeout(stabilizeTimer);
+    }
+  }, [showModal]);
   
   // Configuração do timer de desconto
   useEffect(() => {
@@ -288,10 +311,10 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastActiveSection, userStats.visitTime]);
   
-  // Detectar intent de saída - Com correções
+  // Detectar intent de saída
   useEffect(() => {
-    // Não mostrar intent de saída se já foi fechado pelo usuário
-    if (exitIntentShown || modalClosedByUser) return;
+    // Não mostrar intent de saída se já foi mostrado ou a exibição automática está desativada
+    if (exitIntentShown || autoModalDisabled) return;
     
     // Só mostramos após pelo menos 20 segundos no site
     const minTimeBeforeIntent = 20000; // 20 segundos
@@ -301,7 +324,7 @@ function App() {
     
     const handleMouseLeave = (e: MouseEvent) => {
       // Só ativamos se o cursor sair pela parte superior e se não estiver em mobile
-      if (e.clientY < 5 && !exitIntentShown && !modalClosedByUser && window.innerWidth >= 768) {
+      if (e.clientY < 5 && !exitIntentShown && !autoModalDisabled && window.innerWidth >= 768) {
         setExitIntentShown(true);
         setModalVariant('exit-intent');
         setShowModal(true);
@@ -316,20 +339,20 @@ function App() {
     return () => {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [exitIntentShown, userStats.visitTime, modalClosedByUser]);
+  }, [exitIntentShown, userStats.visitTime, autoModalDisabled]);
   
-  // Timer para mostrar popup baseado no tempo - Com correções
+  // Timer para mostrar popup baseado no tempo
   useEffect(() => {
-    // Não mostrar se modal já estiver aberto, se já tiver sido fechado pelo usuário,
-    // ou se o exit intent já foi mostrado
-    if (showModal || exitIntentShown || modalClosedByUser) return;
+    // Não mostrar se modal já estiver aberto, se exit intent já foi mostrado,
+    // ou se a exibição automática está desativada
+    if (showModal || exitIntentShown || autoModalDisabled) return;
     
     // Mostrar modal após 60 segundos se o usuário não interagiu com a oferta
     const timeThreshold = 60; // 60 segundos
     
     // Verificamos se o usuário já está no site há tempo suficiente
     if (userStats.visitTime >= timeThreshold) {
-      const shouldShowTimeBasedModal = Math.random() < 0.5; // Reduzido de 0.7 para 0.5 (50% de chance)
+      const shouldShowTimeBasedModal = Math.random() < 0.5; // 50% de chance
       
       if (shouldShowTimeBasedModal) {
         setModalVariant('time-based');
@@ -339,7 +362,7 @@ function App() {
         console.log('[Analytics] Modal baseado no tempo exibido - Tempo: ' + userStats.visitTime + 's');
       }
     }
-  }, [userStats.visitTime, showModal, exitIntentShown, modalClosedByUser]);
+  }, [userStats.visitTime, showModal, exitIntentShown, autoModalDisabled]);
   
   // Gerenciar social proofs
   useEffect(() => {
@@ -445,24 +468,40 @@ function App() {
   
   // Função para abrir o modal de compra manualmente (para CTA)
   const handleOpenPurchaseModal = () => {
-    if (!modalClosedByUser) {
-      setModalVariant('default');
-      setShowModal(true);
-      
-      // Eventos para analytics
-      console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
+    // Sempre abre o modal quando um CTA é clicado
+    setModalVariant('default');
+    
+    // Verificar se o modal foi aberto recentemente (menos de 500ms)
+    // Isso previne que o modal "pisque" por conflitos de estado
+    const now = Date.now();
+    if (showModal && (now - modalOpenTimestamp.current < 500)) {
+      console.log('Ignorando abertura do modal para evitar piscar');
+      return;
     }
+    
+    // Abrir o modal
+    setShowModal(true);
+    
+    // Eventos para analytics
+    console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
   };
   
-  // Função para fechar o modal - com atualização de estado
+  // Função para fechar o modal
   const handleCloseModal = () => {
+    // Se o modal foi recém-aberto (menos de 500ms) e ainda não está estável,
+    // ignoramos a tentativa de fechamento para evitar o "piscar"
+    const now = Date.now();
+    if (!modalStable.current && (now - modalOpenTimestamp.current < 500)) {
+      console.log('Ignorando fechamento prematuro do modal');
+      return;
+    }
+    
+    // Fechamos o modal
     setShowModal(false);
     
-    // Quando o componente PurchaseModal chamar esta função com persistência,
-    // ele já terá guardado a preferência no localStorage
-    const wasModalClosed = localStorage.getItem('juvelina_modal_closed') === 'true';
-    if (wasModalClosed) {
-      setModalClosedByUser(true);
+    // Se o usuário escolher desativar modais automáticos
+    if (localStorage.getItem('juvelina_auto_modal_disabled') === 'true') {
+      setAutoModalDisabled(true);
     }
   };
   
@@ -887,99 +926,5 @@ function App() {
     </AppContext.Provider>
   );
 }
-
-// Componente para notificações de compras recentes e atividade
-const RecentPurchaseNotifications = () => {
-  const [notifications, setNotifications] = useState<Array<{
-    id: number;
-    name: string;
-    product: string;
-    time: string;
-    location: string;
-  }>>([]);
-  
-  useEffect(() => {
-    const firstNames = [
-      "Ana", "João", "Maria", "Pedro", "Julia", 
-      "Carlos", "Márcia", "Renato", "Fernanda", "Lucas",
-      "Gabriela", "Rafael", "Patricia", "Ricardo", "Camila"
-    ];
-    
-    const cities = [
-      "São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", 
-      "Curitiba, PR", "Brasília, DF", "Recife, PE", "Salvador, BA",
-      "Porto Alegre, RS", "Fortaleza, CE", "Manaus, AM"
-    ];
-    
-    const products = [
-      "Juvelina Multivitamínico", 
-      "Kit 3 Meses Juvelina", 
-      "Assinatura Mensal"
-    ];
-    
-    // Gerar notificação inicial após 15 segundos (aumentado de 10s para 15s)
-    const initialTimer = setTimeout(() => {
-      generateNotification();
-    }, 15000);
-    
-    // Configurar intervalo maior para gerar notificações (entre 30-60 segundos)
-    const interval = setInterval(() => {
-      // 40% de chance de gerar uma notificação (reduzido de 50% para 40%)
-      if (Math.random() < 0.4) {
-        generateNotification();
-      }
-    }, Math.random() * 30000 + 30000); // Entre 30s e 60s
-    
-    function generateNotification() {
-      const newNotification = {
-        id: Date.now(),
-        name: firstNames[Math.floor(Math.random() * firstNames.length)],
-        product: products[Math.floor(Math.random() * products.length)],
-        time: 'agora',
-        location: cities[Math.floor(Math.random() * cities.length)]
-      };
-      
-      setNotifications(prev => [newNotification, ...prev].slice(0, 1));
-      
-      // Remover após 7 segundos (aumentado de 5s para 7s)
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
-      }, 7000);
-    }
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, []);
-  
-  return (
-    <div className="fixed bottom-20 left-5 z-40">
-      <AnimatePresence>
-        {notifications.map(notification => (
-          <motion.div
-            key={notification.id}
-            initial={{ opacity: 0, x: -100, y: 0 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="bg-white rounded-lg shadow-xl p-3 mb-3 border-l-4 border-green-500 max-w-xs"
-          >
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-              <div>
-                <p className="text-sm">
-                  <span className="font-medium">{notification.name}</span> de {notification.location} acabou de comprar
-                </p>
-                <p className="text-sm font-medium text-juvelina-gold">{notification.product}</p>
-                <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-};
 
 export default App;
