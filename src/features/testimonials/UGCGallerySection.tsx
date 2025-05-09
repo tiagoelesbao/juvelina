@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Instagram, Share2, Heart, MessageCircle, Camera, ExternalLink, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
-import TikTokIcon from '../ui/TikTokIcon';
+import TikTokIcon from '../components/ui/TikTokIcon';
 
 const UGCGallerySection: React.FC = () => {
   const [selectedPost, setSelectedPost] = useState<number | null>(null);

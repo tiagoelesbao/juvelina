@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Instagram, ChevronLeft, ChevronRight, PlayCircle, Quote } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
-import TikTokIcon from '../ui/TikTokIcon';
+import TikTokIcon from '../../components/ui/TikTokIcon';
 
 const ViralTestimonialsSection: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'energia' | 'imunidade' | 'beleza'>('all');

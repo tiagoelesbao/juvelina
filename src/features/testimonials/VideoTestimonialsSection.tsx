@@ -1,7 +1,7 @@
 // src/components/sections/VideoTestimonialsSection.tsx - IMPROVED VERSION
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import VideoCarousel from '../ui/VideoCarousel';
+import VideoCarousel from '../../components/ui/VideoCarousel';
 
 // Dados de exemplo de vídeo depoimentos
 const videoTestimonials = [

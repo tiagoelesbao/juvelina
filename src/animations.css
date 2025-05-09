@@ -10,7 +10,7 @@
 }
 
 .animate-shimmer {
-  animation: shimmer 2s linear infinite;
+  animation: shimmer 3s linear infinite;
 }
 
 @keyframes shimmer {
@@ -67,4 +67,6 @@
     opacity: 0;
     transform: scale(2) translateY(-20px);
   }
+
+  
 }

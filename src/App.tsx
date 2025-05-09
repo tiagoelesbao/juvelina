@@ -3,26 +3,23 @@ import { useState, useEffect, useRef, createContext } from 'react';
 import { ShoppingCart, Menu, X, ArrowUp, Bell, Globe, Sparkles, User, Star } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 
-// Componentes de seções
-import HeroSection from './components/sections/HeroSection';
-import BenefitsSection from './components/sections/BenefitsSection';
-import AbsorptionSection from './components/sections/AbsorptionSection';
-import PricingSection from './components/sections/PricingSection';
-import FaqSection from './components/sections/FaqSection';
-import GuaranteeSection from './components/sections/GuaranteeSection';
-import Footer from './components/Footer';
-import VideoTestimonialsSection from './components/sections/VideoTestimonialsSection';
-import UGCGallerySection from './components/sections/UGCGallerySection';
-import ViralTestimonialsSection from './components/sections/ViralTestimonialsSection';
-import ViralOfferSection from './components/sections/ViralOfferSection';
+// Componentes de seções - IMPORTAÇÕES CORRIGIDAS
+import HeroSection from './features/hero';
+import { BenefitsSection, AbsorptionSection } from './features/benefits';
+import { PricingSection, ViralOfferSection } from './features/pricing';
+import { VideoTestimonialsSection, ViralTestimonialsSection, UGCGallerySection, TestimonialsSection } from './features/testimonials';
+import { FaqSection, GuaranteeSection } from './features';
 
-// Componentes de UI
-import PurchaseModal from './components/modals/PurchaseModal';
+// Componentes de UI e layout
+import Footer from './components/layout/Footer';
+import PurchaseModal from './components/common/PurchaseModal';
 import IngredientsList from './components/IngredientsList';
-import CreatorBadge from './components/ui/CreatorBadge';
-import ScrollProgressBar from './components/ui/ScrollProgressBar';
-import RecentActivityNotification from './components/ui/RecentActivityNotification';
-import VisitorCounter from './components/ui/VisitorCounter';
+import { 
+  CreatorBadge, 
+  ScrollProgressBar, 
+  RecentActivityNotification, 
+  VisitorCounter 
+} from './components/ui';
 
 // Definir o contexto da aplicação
 export const AppContext = createContext<{
@@ -612,7 +609,7 @@ function App() {
           {/* Hero Section */}
           <HeroSection onCtaClick={(e) => handleOpenPurchaseModal(e)} />
           
-          {/* Video Testimonials Section - MOVIDO PARA CÁ */}
+          {/* Video Testimonials Section */}
           <VideoTestimonialsSection />
           
           {/* Benefits Section */}
