@@ -17,7 +17,7 @@ import ViralTestimonialsSection from './components/sections/ViralTestimonialsSec
 import ViralOfferSection from './components/sections/ViralOfferSection';
 
 // Componentes de UI
-import PurchaseModal from './components/modals/PurchaseModal';
+import SmartPurchaseModal from './components/modals/SmartPurchaseModal';
 import IngredientsList from './components/IngredientsList';
 import CreatorBadge from './components/ui/CreatorBadge';
 import ScrollProgressBar from './components/ui/ScrollProgressBar';
@@ -468,41 +468,25 @@ function App() {
   
   // Função para abrir o modal de compra manualmente (para CTA)
   const handleOpenPurchaseModal = () => {
-    // Sempre abre o modal quando um CTA é clicado
+    // Sempre configuramos para o tipo default quando é clicado manualmente
     setModalVariant('default');
     
-    // Verificar se o modal foi aberto recentemente (menos de 500ms)
-    // Isso previne que o modal "pisque" por conflitos de estado
-    const now = Date.now();
-    if (showModal && (now - modalOpenTimestamp.current < 500)) {
-      console.log('Ignorando abertura do modal para evitar piscar');
-      return;
-    }
-    
-    // Abrir o modal
+    // Abrir o modal diretamente sem verificações complexas
     setShowModal(true);
+    modalOpenTimestamp.current = Date.now();
     
     // Eventos para analytics
     console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
   };
   
-  // Função para fechar o modal
+  // Função para fechar o modal com persistência
   const handleCloseModal = () => {
-    // Se o modal foi recém-aberto (menos de 500ms) e ainda não está estável,
-    // ignoramos a tentativa de fechamento para evitar o "piscar"
-    const now = Date.now();
-    if (!modalStable.current && (now - modalOpenTimestamp.current < 500)) {
-      console.log('Ignorando fechamento prematuro do modal');
-      return;
-    }
-    
     // Fechamos o modal
     setShowModal(false);
     
-    // Se o usuário escolher desativar modais automáticos
-    if (localStorage.getItem('juvelina_auto_modal_disabled') === 'true') {
-      setAutoModalDisabled(true);
-    }
+    // Marcar que o modal não deve reabrir automaticamente
+    localStorage.setItem('juvelina_auto_modal_disabled', 'true');
+    setAutoModalDisabled(true);
   };
   
   // Função para rolar para o topo
@@ -897,9 +881,9 @@ function App() {
         <Footer />
 
         {/* Modals e Overlays */}
-        <PurchaseModal 
+        <SmartPurchaseModal 
           isOpen={showModal} 
-          onClose={handleCloseModal} 
+          onClose={handleCloseModal}
           variant={modalVariant}
           personalizedTitle={getPersonalizedCTA()}
         />
