@@ -148,9 +148,6 @@ const UGCGallerySection: React.FC = () => {
     { id: 'all', label: 'Todos' },
     { id: 'instagram', label: 'Instagram' },
     { id: 'tiktok', label: 'TikTok' },
-    { id: 'energy', label: 'Energia' },
-    { id: 'beauty', label: 'Beleza' },
-    { id: 'immunity', label: 'Imunidade' }
   ];
   
   const [activeCategory, setActiveCategory] = useState('all');

@@ -476,9 +476,9 @@ function App() {
   
   // Navegação de seções para rastreamento de conversão
   const navigationItems = [
+    { id: 'video-depoimentos', label: 'Resultados em Vídeo' },
     { id: 'beneficios', label: 'Benefícios' },
     { id: 'absorpcao', label: 'Como Funciona' },
-    { id: 'video-depoimentos', label: 'Resultados em Vídeo' },
     { id: 'ugc-gallery', label: 'Comunidade' },
     { id: 'depoimentos', label: 'Depoimentos' },
     { id: 'garantia', label: 'Garantia' }
@@ -822,18 +822,18 @@ function App() {
         </header>
 
         {/* Main Content */}
-        <main>
+       <main>
           {/* Hero Section */}
           <HeroSection onCtaClick={handleOpenPurchaseModal} />
+          
+          {/* Video Testimonials Section - MOVIDO PARA CÁ */}
+          <VideoTestimonialsSection />
           
           {/* Benefits Section */}
           <BenefitsSection />
           
           {/* Absorption Comparison Section */}
           <AbsorptionSection />
-          
-          {/* Video Testimonials Section */}
-          <VideoTestimonialsSection />
           
           {/* UGC Gallery Section */}
           <UGCGallerySection />
