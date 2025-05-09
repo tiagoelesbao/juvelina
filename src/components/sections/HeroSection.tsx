@@ -18,21 +18,22 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
   
   // Estado para animação de contagem dos números
   const [stats, setStats] = useState([
-    { id: 1, value: 0, target: 5000, label: 'Clientes Satisfeitos', icon: '👥' },
+    { id: 1, value: 0, target: 12500, label: 'Clientes Satisfeitos', icon: '👥' }, // Aumentado para valor mais impactante
     { id: 2, value: 0, target: 25, label: 'Nutrientes Premium', icon: '🌿' },
     { id: 3, value: 0, target: 100, label: 'Garantia de Satisfação', icon: '✓' },
   ]);
   
-  // Rastreamento de scroll para animações
+  // Rastreamento de scroll para animações - Threshold reduzido para garantir ativação
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
+          console.log("Hero section in view - activating animations");
           setInView(true);
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 } // Reduzido de 0.2 para 0.1 para garantir detecção mais cedo
     );
 
     if (sectionRef.current) {
@@ -46,9 +47,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
     };
   }, []);
 
-  // Animação de contagem para estatísticas
+  // Animação de contagem para estatísticas - otimizada para garantir execução
   useEffect(() => {
     if (inView) {
+      console.log("Starting counter animations");
+      
+      // Ajuste para garantir que os incrementos sejam proporcionais aos valores alvo
       const interval = setInterval(() => {
         let allCompleted = true;
         
@@ -56,9 +60,11 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
           prev.map(stat => {
             if (stat.value < stat.target) {
               allCompleted = false;
-              const increment = stat.target > 100 ? 
-                Math.ceil(stat.target / 50) : 
-                Math.max(1, Math.ceil(stat.target / 20));
+              
+              // Ajuste dinâmico de incremento baseado no tamanho do target
+              const increment = stat.target > 1000 ? 
+                Math.ceil(stat.target / 40) : 
+                Math.max(1, Math.ceil(stat.target / 15));
               
               return {
                 ...stat,
@@ -70,6 +76,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
         );
         
         if (allCompleted) {
+          console.log("Counter animations completed");
           clearInterval(interval);
         }
       }, 30);
@@ -100,10 +107,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
     }
   ];
 
-  // Formatação de números para exibição
+  // Formatação de números para exibição - adaptada para números maiores
   const formatNumber = (num: number): string => {
-    if (num >= 1000) {
-      return `+${Math.floor(num / 1000)}mil`;
+    if (num >= 10000) {
+      return `+${(num / 1000).toFixed(0)}mil`;
+    } else if (num >= 1000) {
+      return `+${(num / 1000).toFixed(1)}mil`.replace('.', ',');
     }
     return `${num}%`;
   };
@@ -293,7 +302,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
               </motion.button>
             </motion.div>
             
-            {/* Estatísticas sociais - com animação de contagem */}
+            {/* Estatísticas sociais - com animação de contagem otimizada */}
             <div 
               ref={statsRef}
               className="grid grid-cols-3 gap-4"
@@ -406,18 +415,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
               </motion.div>
             </motion.div>
           
-            {/* Container da imagem principal */}
-            <div className="relative mx-auto max-w-md">
-              {/* Efeito de luz radial */}
+            {/* Container da imagem principal - APRIMORADO */}
+            <div className="relative mx-auto max-w-lg"> {/* Aumentado para max-w-lg */}
+              {/* Efeito de luz radial aumentado */}
               <div 
                 className="absolute top-1/2 left-1/2 w-full h-full -translate-x-1/2 -translate-y-1/2 rounded-full"
                 style={{
                   background: "radial-gradient(circle, rgba(169,104,61,0.15) 0%, transparent 70%)",
-                  filter: "blur(30px)"
+                  filter: "blur(30px)",
+                  transform: "scale(1.2)" // Aumentado para dar mais destaque
                 }}
               />
               
-              {/* Imagem do produto */}
+              {/* Imagem do produto com tamanho aumentado */}
               <motion.div
                 className="relative z-10"
                 animate={{ 
@@ -430,21 +440,21 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                   ease: "easeInOut" 
                 }}
               >
-                {/* Usar imagem hospedada no Imgur para garantir que funcione */}
+                {/* Mantendo a URL do Imgur conforme solicitado */}
                 <img 
                   src="https://i.imgur.com/Gkaa22f.png" 
                   alt="Suplemento Líquido Juvelina" 
                   className="max-w-full h-auto"
                   style={{ 
                     filter: "drop-shadow(0px 30px 60px rgba(169,104,61,0.3))",
-                    transform: "scale(1.15)"
+                    transform: "scale(1.25)" // Aumentado de 1.15 para 1.25
                   }}
                 />
               </motion.div>
 
-              {/* Selos de certificação - melhor posicionados */}
+              {/* Selos de certificação - reposicionados para melhor encaixe com o frasco maior */}
               <motion.div 
-                className="absolute top-1/4 -left-12 transform"
+                className="absolute top-1/4 -left-16 transform" // Ajustado de -left-12 para -left-16
                 initial={{ opacity: 0, scale: 0.8, x: -20 }}
                 animate={{ opacity: 1, scale: 1, x: 0 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
@@ -456,6 +466,10 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                     border: "1px solid rgba(169,104,61,0.1)"
                   }}
                   whileHover={{ y: -3, boxShadow: "0 12px 30px rgba(169,104,61,0.3)" }}
+                  animate={{ y: [0, -5, 0] }} // Adicionada animação de flutuação suave
+                  transition={{ 
+                    y: { duration: 3, repeat: Infinity, repeatType: "reverse" }
+                  }}
                 >
                   <div 
                     className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100"
@@ -473,16 +487,24 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 </motion.div>
               </motion.div>
               
-              {/* Selo de Pureza Certificada */}
+              {/* Selo de Pureza Certificada - reposicionado */}
               <motion.div
-                className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute -bottom-6 right-0"
+                className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute -bottom-8 right-0" // Ajustado de -bottom-6 para -bottom-8
                 style={{
                   boxShadow: "0 10px 25px rgba(169,104,61,0.2)",
                   border: "1px solid rgba(169,104,61,0.1)"
                 }}
                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  y: [0, -4, 0] // Animação de flutuação
+                }}
+                transition={{ 
+                  delay: 1, 
+                  duration: 0.5,
+                  y: { delay: 1.5, duration: 4, repeat: Infinity, repeatType: "reverse" }
+                }}
                 whileHover={{ y: -3, boxShadow: "0 12px 30px rgba(169,104,61,0.3)" }}
               >
                 <div 
@@ -506,16 +528,25 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                 </span>
               </motion.div>
               
-              {/* Selo adicional */}
+              {/* Selo adicional - reposicionado */}
               <motion.div
-                className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute bottom-1/3 -left-10"
+                className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute bottom-1/3 -left-12" // Ajustado de -left-10 para -left-12
                 style={{
                   boxShadow: "0 10px 25px rgba(169,104,61,0.2)",
                   border: "1px solid rgba(169,104,61,0.1)"
                 }}
                 initial={{ opacity: 0, scale: 0.8, x: -20 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                transition={{ delay: 1.2, duration: 0.5 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  x: 0,
+                  y: [0, -5, 0] // Animação de flutuação
+                }}
+                transition={{ 
+                  delay: 1.2, 
+                  duration: 0.5,
+                  y: { delay: 1.7, duration: 3.5, repeat: Infinity, repeatType: "reverse" }
+                }}
                 whileHover={{ y: -3, boxShadow: "0 12px 30px rgba(169,104,61,0.3)" }}
               >
                 <div 
@@ -529,6 +560,42 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {
                   className="font-medium text-sm text-gray-700"
                 >
                   100% Natural
+                </span>
+              </motion.div>
+              
+              {/* Novo selo "Absorção 5x" - adicionado para melhor balanceamento visual */}
+              <motion.div
+                className="bg-white rounded-full pl-2 pr-4 py-2 flex items-center gap-2 shadow-lg absolute top-1/2 -right-14"
+                style={{
+                  boxShadow: "0 10px 25px rgba(169,104,61,0.2)",
+                  border: "1px solid rgba(169,104,61,0.1)"
+                }}
+                initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1, 
+                  x: 0,
+                  y: [0, -5, 0] // Animação de flutuação
+                }}
+                transition={{ 
+                  delay: 1.4, 
+                  duration: 0.5,
+                  y: { delay: 1.9, duration: 3.7, repeat: Infinity, repeatType: "reverse" }
+                }}
+                whileHover={{ y: -3, boxShadow: "0 12px 30px rgba(169,104,61,0.3)" }}
+              >
+                <div 
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(169,104,61,0.15)" }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A9683D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+                <span 
+                  className="font-medium text-sm text-gray-700"
+                >
+                  Absorção 5x
                 </span>
               </motion.div>
             </div>

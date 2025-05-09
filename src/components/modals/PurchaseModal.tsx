@@ -1,4 +1,4 @@
-// src/components/modals/PurchaseModal.tsx - CORRECTED VERSION WITH FIXED DIV TAG
+// src/components/modals/PurchaseModal.tsx - VERSÃO CORRIGIDA
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, CheckCircle, Clock, Shield, Star } from 'lucide-react';
@@ -28,17 +28,14 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   personalizedTitle
 }) => {
   const [selectedOption, setSelectedOption] = useState<PurchaseOption>('monthly');
-  const [isLeavingModal, setIsLeavingModal] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({
-    minutes: 15,
-    seconds: 0
-  });
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   
-  // Verificar se é mobile
+  // Local storage key para controlar se o modal já foi fechado pelo usuário
+  const MODAL_CLOSED_KEY = 'juvelina_modal_closed';
+  
+  // Verificar se é mobile e ajustar conforme necessário
   useEffect(() => {
     const checkIfMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -52,86 +49,27 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     };
   }, []);
   
-  // Resetar estados quando o modal é aberto
+  // Verificar se o modal já foi fechado pelo usuário anteriormente
   useEffect(() => {
     if (isOpen) {
-      setIsLeavingModal(false);
+      const wasModalClosed = localStorage.getItem(MODAL_CLOSED_KEY) === 'true';
       
-      // Apenas mostrar o exit intent se nunca foi mostrado antes
-      if (variant === 'exit-intent' && !exitIntentShown) {
+      // Se o usuário já fechou o modal anteriormente, fechamos automaticamente
+      if (wasModalClosed) {
+        console.log("Modal já foi fechado pelo usuário. Fechando automaticamente.");
+        onClose();
+      }
+      
+      // Resetar estado de exit intent quando modal é aberto
+      if (variant === 'exit-intent') {
         setShowExitIntent(true);
-        setExitIntentShown(true);
       } else {
         setShowExitIntent(false);
       }
     }
-  }, [isOpen, variant, exitIntentShown]);
-  
-  // Gatilho de urgência - contador regressivo
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { minutes: prev.minutes - 1, seconds: 59 };
-        } else {
-          clearInterval(timer);
-          return { minutes: 0, seconds: 0 };
-        }
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [isOpen]);
-  
-  // Detectar intent de saída
-  useEffect(() => {
-    if (!isOpen || exitIntentShown) return;
-    
-    let timeout: ReturnType<typeof setTimeout>;
-    
-    const handleMouseLeave = (e: MouseEvent) => {
-      // Só mostra o intent se o cursor sair pela parte superior e se o exit intent nunca foi mostrado
-      if (e.clientY < 50 && !isLeavingModal && !showExitIntent && !exitIntentShown && variant !== 'exit-intent') {
-        setIsLeavingModal(true);
-        timeout = setTimeout(() => {
-          setShowExitIntent(true);
-          setExitIntentShown(true);  // Marca como mostrado
-        }, 300);
-      }
-    };
-    
-    document.addEventListener('mouseleave', handleMouseLeave);
-    
-    return () => {
-      document.removeEventListener('mouseleave', handleMouseLeave);
-      clearTimeout(timeout);
-    };
-  }, [isOpen, isLeavingModal, showExitIntent, exitIntentShown, variant]);
-  
-  // Click fora para fechar
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        // Se clicar fora do modal principal e não estiver no exit intent, fecha
-        if (!showExitIntent) {
-          onClose();
-        }
-      }
-    };
-    
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose, showExitIntent]);
-  
+  }, [isOpen, variant, onClose]);
+
+  // Opções de compra
   const options: Record<PurchaseOption, OptionType> = {
     single: {
       title: 'Experimente',
@@ -232,7 +170,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
       return (
         <div className="bg-red-50 p-4 rounded-lg my-4 border border-red-100">
           <p className="text-center text-red-600">
-            <Clock size={16} className="inline mr-1" /> Oferta válida por <span className="font-bold">apenas {timeLeft.minutes}:{timeLeft.seconds.toString().padStart(2, '0')}</span>
+            <Clock size={16} className="inline mr-1" /> Oferta válida por <span className="font-bold">tempo limitado</span>
           </p>
         </div>
       );
@@ -241,6 +179,14 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     return null;
   };
   
+  // Handler para fechar o modal, com persistência
+  const handleClose = () => {
+    // Marcar que o usuário fechou o modal conscientemente
+    localStorage.setItem(MODAL_CLOSED_KEY, 'true');
+    console.log("Modal fechado pelo usuário. Marcado como fechado.");
+    onClose();
+  };
+
   // Handler para fechar o exit intent
   const handleCloseExitIntent = () => {
     setShowExitIntent(false);
@@ -252,11 +198,31 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     setSelectedOption('monthly');
   };
 
+  // Click fora para fechar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        // Se clicar fora do modal principal e não estiver no exit intent, fecha e persiste
+        if (!showExitIntent) {
+          handleClose();
+        }
+      }
+    };
+    
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, showExitIntent]);
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center"
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -265,12 +231,12 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
             backgroundColor: 'rgba(0, 0, 0, 0.5)'
           }}
         >
-          {/* Conteúdo do modal responsivo */}
+          {/* Conteúdo do modal - Layout responsivo aprimorado */}
           {isMobile ? (
-            // Layout Mobile (Vertical com scroll)
+            // Layout Mobile completamente redesenhado
             <motion.div
               ref={modalRef}
-              className="bg-white rounded-t-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative mx-auto mt-auto"
+              className="bg-white rounded-t-2xl shadow-2xl w-full max-h-[90vh] overflow-y-auto relative mx-auto mt-auto"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
@@ -281,41 +247,36 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold">{getTitle()}</h3>
                   <button
-                    onClick={onClose}
-                    className="text-white hover:text-gray-200 transition-colors"
+                    onClick={handleClose}
+                    className="text-white hover:text-gray-200 transition-colors p-2"
+                    aria-label="Fechar"
                   >
                     <X size={24} />
                   </button>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <Clock size={18} />
-                  <div className="text-sm">
-                    Oferta expira em: <span className="font-bold">{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
-                  </div>
-                </div>
               </div>
               
-              <div className="p-6">
+              <div className="p-4">
                 {/* Conteúdo extra específico do variant */}
                 {getExtraContent()}
                 
-                {/* Breve descrição do produto */}
+                {/* Breve descrição do produto - Simplificada para mobile */}
                 <div className="mb-6">
                   <h4 className="font-bold text-lg text-juvelina-gold mb-2">Transforme seu bem-estar com Juvelina</h4>
-                  <p className="text-gray-600">
-                    Nosso suplemento líquido premium com 25 nutrientes essenciais e absorção 5x superior garante resultados visíveis desde as primeiras semanas.
+                  <p className="text-gray-600 text-sm">
+                    Suplemento líquido premium com 25 nutrientes essenciais e absorção 5x superior.
                   </p>
                 </div>
                 
-                {/* Opções de compra */}
-                <div className="border-t border-gray-200 pt-6 mb-6">
-                  <h4 className="font-bold mb-4">Escolha sua opção:</h4>
+                {/* Opções de compra otimizadas para mobile */}
+                <div className="border-t border-gray-200 pt-4 mb-4">
+                  <h4 className="font-bold mb-4 text-center">Escolha sua opção:</h4>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {(Object.entries(options) as [PurchaseOption, typeof options.single][]).map(([key, option]) => (
                       <div
                         key={key}
-                        className={`border rounded-xl p-4 hover:border-juvelina-gold transition-all cursor-pointer relative ${
+                        className={`border rounded-xl p-3 hover:border-juvelina-gold transition-all cursor-pointer relative ${
                           selectedOption === key
                             ? 'border-2 border-juvelina-gold bg-juvelina-mint bg-opacity-10'
                             : 'border-gray-200'
@@ -324,14 +285,9 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                       >
                         {option.popular && (
                           <motion.div
-                            className="absolute -top-3 right-4 bg-juvelina-gold text-white text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wide"
+                            className="absolute -top-2.5 right-4 bg-juvelina-gold text-white text-xs px-2 py-0.5 rounded-full uppercase font-bold tracking-wide"
                             animate={{ 
                               scale: [1, 1.05, 1],
-                              boxShadow: [
-                                '0 0 0 rgba(212, 178, 106, 0.4)',
-                                '0 0 8px rgba(212, 178, 106, 0.8)',
-                                '0 0 0 rgba(212, 178, 106, 0.4)'
-                              ]
                             }}
                             transition={{
                               repeat: Infinity,
@@ -339,7 +295,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                               duration: 2
                             }}
                           >
-                            Mais Popular
+                            Popular
                           </motion.div>
                         )}
                         
@@ -354,28 +310,34 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                           />
                           <div className="flex-1">
                             <div className="flex justify-between items-center">
-                              <label htmlFor={`option-${key}`} className="font-bold flex items-center">
-                                <span>{option.title}</span>
-                                {calculateDiscount(option.originalPrice, option.price) > 0 && (
-                                  <span className="ml-2 bg-juvelina-gold/10 text-juvelina-gold text-xs px-2 py-0.5 rounded-full">
-                                    {calculateDiscount(option.originalPrice, option.price)}% OFF
-                                  </span>
-                                )}
+                              <label htmlFor={`option-${key}`} className="font-bold text-sm flex items-center">
+                                {option.title}
                               </label>
                               <div>
-                                <span className="text-juvelina-gold font-bold">
+                                <span className="text-juvelina-gold font-bold text-sm">
                                   R$ {formatPrice(option.price)}
-                                  {key === 'monthly' && <span className="text-sm font-normal">/mês</span>}
+                                  {key === 'monthly' && <span className="text-xs font-normal">/mês</span>}
                                 </span>
-                                <div className="text-gray-500 line-through text-sm">
+                                <div className="text-gray-500 line-through text-xs">
                                   R$ {formatPrice(option.originalPrice)}
                                 </div>
                               </div>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1">{option.description}</p>
                             
-                            {/* Mostrar benefícios apenas para a opção selecionada */}
-                            {selectedOption === key && (
+                            {/* Badges de economia/desconto */}
+                            <div className="mt-1">
+                              <span className="bg-juvelina-gold/10 text-juvelina-gold text-xs px-2 py-0.5 rounded-full">
+                                {calculateDiscount(option.originalPrice, option.price)}% OFF
+                              </span>
+                            </div>
+                            
+                            {/* Mostrar apenas o primeiro benefício no modo colapsado */}
+                            <p className="text-xs text-gray-600 mt-2">
+                              {option.benefits[0]} {option.benefits.length > 1 ? '...' : ''}
+                            </p>
+                            
+                            {/* Botão para expandir/colapsar benefícios */}
+                            {selectedOption === key && option.benefits.length > 1 && (
                               <motion.div 
                                 className="mt-3 space-y-2 bg-gray-50 p-3 rounded-lg"
                                 initial={{ height: 0, opacity: 0 }}
@@ -384,8 +346,8 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                               >
                                 {option.benefits.map((benefit, index) => (
                                   <div key={index} className="flex items-start gap-2">
-                                    <CheckCircle size={16} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm">{benefit}</span>
+                                    <CheckCircle size={14} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
+                                    <span className="text-xs">{benefit}</span>
                                   </div>
                                 ))}
                               </motion.div>
@@ -399,7 +361,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
               </div>
               
               {/* Botão de ação principal */}
-              <div className="p-6 pt-0">
+              <div className="p-4 pt-2 sticky bottom-0 bg-white z-20 border-t border-gray-100">
                 <motion.button
                   className="w-full bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition font-medium flex items-center justify-center gap-2 shadow-lg"
                   whileHover={{ scale: 1.02 }}
@@ -408,57 +370,30 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                   <ShoppingCart size={20} />
                   Garantir Meu Juvelina Agora
                 </motion.button>
+                
+                {/* Link para fechar como alternativa */}
+                <button 
+                  onClick={handleClose}
+                  className="w-full text-gray-500 text-sm py-2 mt-2 hover:text-gray-700"
+                >
+                  Agora não, obrigado
+                </button>
               </div>
               
-              {/* Elementos de confiança */}
-              <div className="px-6 pb-6 pt-2 flex items-center justify-center gap-6 text-sm text-gray-600">
+              {/* Elementos de confiança reduzidos */}
+              <div className="px-4 pb-6 pt-2 flex items-center justify-center gap-6 text-xs text-gray-600 flex-wrap">
                 <div className="flex items-center gap-1">
-                  <Shield size={16} className="text-juvelina-gold" />
+                  <Shield size={12} className="text-juvelina-gold" />
                   <span>Pagamento Seguro</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <CheckCircle size={16} className="text-juvelina-gold" />
+                  <CheckCircle size={12} className="text-juvelina-gold" />
                   <span>Garantia de 30 dias</span>
-                </div>
-              </div>
-              
-              {/* Métodos de pagamento */}
-              <div className="p-6 border-t border-gray-100">
-                <p className="text-center text-sm text-gray-500 mb-2">
-                  Formas de pagamento aceitas
-                </p>
-                <div className="flex justify-center items-center gap-3 mt-2">
-                  <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" className="h-6 w-auto" alt="Visa" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/196/196561.png" className="h-6 w-auto" alt="Mastercard" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/217/217425.png" className="h-6 w-auto" alt="Boleto" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/888/888870.png" className="h-6 w-auto" alt="Pix" />
-                </div>
-              </div>
-              
-              {/* Depoimentos sociais */}
-              <div className="p-6 border-t border-gray-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex -space-x-2">
-                    {['https://i.pravatar.cc/100?img=1', 'https://i.pravatar.cc/100?img=2', 'https://i.pravatar.cc/100?img=3'].map((avatar, i) => (
-                      <img 
-                        key={i} 
-                        src={avatar} 
-                        alt="Avatar de cliente" 
-                        className="w-8 h-8 rounded-full border-2 border-white"
-                      />
-                    ))}
-                    <div className="w-8 h-8 rounded-full bg-juvelina-gold text-white flex items-center justify-center text-xs font-bold border-2 border-white">
-                      +5k
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-800">+5.000 clientes</span> escolheram Juvelina no último mês
-                  </div>
                 </div>
               </div>
             </motion.div>
           ) : (
-            // Layout Desktop (cards horizontais)
+            // Layout Desktop - mantido com pequenos ajustes
             <motion.div
               ref={modalRef}
               className="relative max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
@@ -470,20 +405,12 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
               <div className="bg-gradient-to-r from-juvelina-gold to-juvelina-gold/80 text-white p-4 rounded-t-2xl">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold">{getTitle()}</h3>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Clock size={18} />
-                      <div className="text-sm">
-                        Oferta expira em: <span className="font-bold">{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={onClose}
-                      className="text-white hover:text-gray-200 transition-colors"
-                    >
-                      <X size={24} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleClose}
+                    className="text-white hover:text-gray-200 transition-colors p-2"
+                  >
+                    <X size={24} />
+                  </button>
                 </div>
               </div>
               
@@ -586,6 +513,16 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                   </motion.button>
                 </div>
                 
+                {/* Link para fechar alternativo */}
+                <div className="text-center mt-3">
+                  <button 
+                    onClick={handleClose}
+                    className="text-gray-500 text-sm hover:text-gray-700"
+                  >
+                    Agora não, obrigado
+                  </button>
+                </div>
+                
                 {/* Elementos de confiança no rodapé */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex flex-wrap justify-around items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -628,7 +565,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                 }}
               >
                 <motion.div
-                  className="bg-white rounded-2xl shadow-2xl max-w-md w-full relative overflow-hidden"
+                  className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden"
                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 20 }}

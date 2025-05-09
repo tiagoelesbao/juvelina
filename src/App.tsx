@@ -64,6 +64,8 @@ function App() {
   // Estado do modal de compra
   const [showModal, setShowModal] = useState(false);
   const [modalVariant, setModalVariant] = useState<'default' | 'exit-intent' | 'time-based'>('default');
+  const [exitIntentShown, setExitIntentShown] = useState(false);
+  const [modalClosedByUser, setModalClosedByUser] = useState(false);
   
   // Estado do menu mobile
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -71,7 +73,6 @@ function App() {
   // Estados de UI
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lastActiveSection, setLastActiveSection] = useState<string>('hero');
   const [showWelcomeTooltip, setShowWelcomeTooltip] = useState(false);
@@ -110,6 +111,12 @@ function App() {
     deviceType: 'desktop'
   });
   
+  // Efeito para verificar se o modal já foi fechado pelo usuário anteriormente
+  useEffect(() => {
+    const wasModalClosed = localStorage.getItem('juvelina_modal_closed') === 'true';
+    setModalClosedByUser(wasModalClosed);
+  }, []);
+
   // Determinar tipo de dispositivo
   useEffect(() => {
     const checkDevice = () => {
@@ -281,21 +288,25 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastActiveSection, userStats.visitTime]);
   
-  // Detectar intent de saída
+  // Detectar intent de saída - Com correções
   useEffect(() => {
-    // Não mostrar intent de saída imediatamente
+    // Não mostrar intent de saída se já foi fechado pelo usuário
+    if (exitIntentShown || modalClosedByUser) return;
+    
+    // Só mostramos após pelo menos 20 segundos no site
     const minTimeBeforeIntent = 20000; // 20 segundos
     
-    // Só mostramos o intent de saída após algum tempo
-    if (exitIntentShown || userStats.visitTime * 1000 < minTimeBeforeIntent) return;
+    // Verificamos se o usuário já está no site há tempo suficiente
+    if (userStats.visitTime * 1000 < minTimeBeforeIntent) return;
     
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY < 5 && !exitIntentShown && userStats.visitTime * 1000 >= minTimeBeforeIntent) {
+      // Só ativamos se o cursor sair pela parte superior e se não estiver em mobile
+      if (e.clientY < 5 && !exitIntentShown && !modalClosedByUser && window.innerWidth >= 768) {
         setExitIntentShown(true);
         setModalVariant('exit-intent');
         setShowModal(true);
         
-        // Eventos para analytics
+        // Marcamos como mostrado para não repetir
         console.log('[Analytics] Exit intent detectado - Tempo: ' + userStats.visitTime + 's');
       }
     };
@@ -305,15 +316,20 @@ function App() {
     return () => {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [exitIntentShown, userStats.visitTime]);
+  }, [exitIntentShown, userStats.visitTime, modalClosedByUser]);
   
-  // Timer para mostrar popup baseado no tempo
+  // Timer para mostrar popup baseado no tempo - Com correções
   useEffect(() => {
+    // Não mostrar se modal já estiver aberto, se já tiver sido fechado pelo usuário,
+    // ou se o exit intent já foi mostrado
+    if (showModal || exitIntentShown || modalClosedByUser) return;
+    
     // Mostrar modal após 60 segundos se o usuário não interagiu com a oferta
     const timeThreshold = 60; // 60 segundos
     
-    if (!showModal && !exitIntentShown && userStats.visitTime >= timeThreshold) {
-      const shouldShowTimeBasedModal = Math.random() < 0.7; // 70% de chance
+    // Verificamos se o usuário já está no site há tempo suficiente
+    if (userStats.visitTime >= timeThreshold) {
+      const shouldShowTimeBasedModal = Math.random() < 0.5; // Reduzido de 0.7 para 0.5 (50% de chance)
       
       if (shouldShowTimeBasedModal) {
         setModalVariant('time-based');
@@ -323,7 +339,7 @@ function App() {
         console.log('[Analytics] Modal baseado no tempo exibido - Tempo: ' + userStats.visitTime + 's');
       }
     }
-  }, [userStats.visitTime, showModal, exitIntentShown]);
+  }, [userStats.visitTime, showModal, exitIntentShown, modalClosedByUser]);
   
   // Gerenciar social proofs
   useEffect(() => {
@@ -427,13 +443,27 @@ function App() {
     return () => clearTimeout(welcomeTimer);
   }, []);
   
-  // Função para abrir o modal de compra
+  // Função para abrir o modal de compra manualmente (para CTA)
   const handleOpenPurchaseModal = () => {
-    setModalVariant('default');
-    setShowModal(true);
+    if (!modalClosedByUser) {
+      setModalVariant('default');
+      setShowModal(true);
+      
+      // Eventos para analytics
+      console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
+    }
+  };
+  
+  // Função para fechar o modal - com atualização de estado
+  const handleCloseModal = () => {
+    setShowModal(false);
     
-    // Eventos para analytics
-    console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
+    // Quando o componente PurchaseModal chamar esta função com persistência,
+    // ele já terá guardado a preferência no localStorage
+    const wasModalClosed = localStorage.getItem('juvelina_modal_closed') === 'true';
+    if (wasModalClosed) {
+      setModalClosedByUser(true);
+    }
   };
   
   // Função para rolar para o topo
@@ -830,7 +860,7 @@ function App() {
         {/* Modals e Overlays */}
         <PurchaseModal 
           isOpen={showModal} 
-          onClose={() => setShowModal(false)} 
+          onClose={handleCloseModal} 
           variant={modalVariant}
           personalizedTitle={getPersonalizedCTA()}
         />
@@ -857,8 +887,6 @@ function App() {
     </AppContext.Provider>
   );
 }
-
-// App.tsx Social Proof Snippet - Replace the existing social proof code with this improved version
 
 // Componente para notificações de compras recentes e atividade
 const RecentPurchaseNotifications = () => {
@@ -953,8 +981,5 @@ const RecentPurchaseNotifications = () => {
     </div>
   );
 };
-
-// Componente de contador de visitantes ativos - movido para o componente principal
-// para melhor gerenciamento de estado e consistência
 
 export default App;
