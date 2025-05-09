@@ -1,2 +1,2 @@
-export { default as FaqSection } from './FaqSection';
-export { default as GuaranteeSection } from './GuaranteeSection';
+export { default as FaqSection } from './testimonials/FaqSection';
+export { default as GuaranteeSection } from './testimonials/GuaranteeSection';
