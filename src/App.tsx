@@ -1,4 +1,4 @@
-// src/App.tsx - Correção para problemas de modal piscando e não fechando
+// src/App.tsx - VERSÃO CORRIGIDA
 import { useState, useEffect, useRef, createContext } from 'react';
 import { ShoppingCart, Menu, X, ArrowUp, Bell, Globe, Sparkles, User, Star } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
@@ -17,14 +17,16 @@ import ViralTestimonialsSection from './components/sections/ViralTestimonialsSec
 import ViralOfferSection from './components/sections/ViralOfferSection';
 
 // Componentes de UI
-import SmartPurchaseModal from './components/modals/SmartPurchaseModal';
+import PurchaseModal from './components/modals/PurchaseModal';
 import IngredientsList from './components/IngredientsList';
 import CreatorBadge from './components/ui/CreatorBadge';
 import ScrollProgressBar from './components/ui/ScrollProgressBar';
+import RecentActivityNotification from './components/ui/RecentActivityNotification';
+import VisitorCounter from './components/ui/VisitorCounter';
 
 // Definir o contexto da aplicação
 export const AppContext = createContext<{
-  openPurchaseModal: () => void;
+  openPurchaseModal: (e?: React.MouseEvent) => void;
   lastActiveSection: string;
   userStats: {
     visitTime: number;
@@ -41,32 +43,14 @@ export const AppContext = createContext<{
   }
 });
 
-// Tipos para Social Proof
-interface SocialProof {
-  id: number;
-  name: string;
-  avatar: string;
-  action: string;
-  time: string;
-  location: string;
-}
-
-interface Notification {
-  id: number;
-  type: 'purchase' | 'review' | 'stock' | 'discount';
-  message: string;
-  timestamp: number;
-}
-
 function App() {
   // Estado do modal de compra
   const [showModal, setShowModal] = useState(false);
   const [modalVariant, setModalVariant] = useState<'default' | 'exit-intent' | 'time-based'>('default');
-  const [exitIntentShown, setExitIntentShown] = useState(false);
   
-  // Novo estado para controlar se modal foi fechado pelo usuário
-  // mas ele ainda deve poder reabrir manualmente
-  const [autoModalDisabled, setAutoModalDisabled] = useState(false);
+  // Refs para controle de ações do modal
+  const isActionInProgressRef = useRef(false);
+  const modalCloseAttemptedRef = useRef(false);
   
   // Estado do menu mobile
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -74,14 +58,13 @@ function App() {
   // Estados de UI
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showIngredients, setShowIngredients] = useState(false);
+  const [exitIntentShown, setExitIntentShown] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [lastActiveSection, setLastActiveSection] = useState<string>('hero');
   const [showWelcomeTooltip, setShowWelcomeTooltip] = useState(false);
   
-  // Estados de notificações e social proof
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showNotification, setShowNotification] = useState<number | null>(null);
-  const [activeSocialProof, setActiveSocialProof] = useState<number | null>(null);
+  // Controle para notificações
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   
   // Estados de urgência e escassez
   const [discountTimer, setDiscountTimer] = useState({
@@ -90,14 +73,15 @@ function App() {
     seconds: 59
   });
   const [stockCount, setStockCount] = useState(54);
-  const [visitorsCount, setVisitorsCount] = useState(Math.floor(Math.random() * 15) + 20);
   
   // Referências para elementos DOM
   const appRef = useRef<HTMLDivElement>(null);
   
-  // Referência para controlar a estabilidade do modal
-  const modalStable = useRef<boolean>(false);
-  const modalOpenTimestamp = useRef<number>(0);
+  // Controle para não exibir modais automáticos
+  const [autoModalDisabled, setAutoModalDisabled] = useState(false);
+  
+  // Detectar se é mobile
+  const [isMobile, setIsMobile] = useState(false);
   
   // Scroll progress com Framer Motion
   const { scrollYProgress } = useScroll();
@@ -116,21 +100,23 @@ function App() {
     deviceType: 'desktop'
   });
   
-  // Efeito para verificar se a exibição automática do modal está desativada
+  // Verificar se exibição automática do modal está desativada
   useEffect(() => {
     const isAutoDisabled = localStorage.getItem('juvelina_auto_modal_disabled') === 'true';
     setAutoModalDisabled(isAutoDisabled);
   }, []);
-
+  
   // Determinar tipo de dispositivo
   useEffect(() => {
     const checkDevice = () => {
-      const isMobile = window.innerWidth < 768;
+      const mobileCheck = window.innerWidth < 768;
+      setIsMobile(mobileCheck);
+      
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
       
       setUserStats(prev => ({
         ...prev,
-        deviceType: isMobile ? 'mobile' : isTablet ? 'tablet' : 'desktop'
+        deviceType: mobileCheck ? 'mobile' : isTablet ? 'tablet' : 'desktop'
       }));
     };
     
@@ -139,60 +125,6 @@ function App() {
     
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
-  
-  // Dados de social proof
-  const socialProofs: SocialProof[] = [
-    {
-      id: 1,
-      name: "Julia Ribeiro",
-      avatar: "https://images.unsplash.com/photo-1619785292559-a15caa28bde6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80",
-      action: "acabou de comprar Juvelina",
-      time: "agora mesmo",
-      location: "São Paulo, SP"
-    },
-    {
-      id: 2,
-      name: "Marcos Almeida",
-      avatar: "https://images.unsplash.com/photo-1600486913747-55e5470d6f40?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1740&q=80",
-      action: "assinou o plano mensal",
-      time: "há 2 minutos",
-      location: "Rio de Janeiro, RJ"
-    },
-    {
-      id: 3,
-      name: "Fernanda Costa",
-      avatar: "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
-      action: "comprou o kit 3 meses",
-      time: "há 5 minutos",
-      location: "Belo Horizonte, MG"
-    },
-    {
-      id: 4,
-      name: "Pedro Henrique",
-      avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
-      action: "deixou uma avaliação 5 estrelas",
-      time: "há 10 minutos",
-      location: "Curitiba, PR"
-    }
-  ];
-  
-  // Efeito para estabilizar o modal e evitar fechamentos rápidos acidentais
-  useEffect(() => {
-    if (showModal) {
-      // Marcamos o timestamp de quando o modal foi aberto
-      modalOpenTimestamp.current = Date.now();
-      // O modal ainda não está estável
-      modalStable.current = false;
-      
-      // Definimos um timer para considerar o modal estável após 600ms
-      // Isso impede fechamentos acidentais durante a animação
-      const stabilizeTimer = setTimeout(() => {
-        modalStable.current = true;
-      }, 600);
-      
-      return () => clearTimeout(stabilizeTimer);
-    }
-  }, [showModal]);
   
   // Configuração do timer de desconto
   useEffect(() => {
@@ -228,21 +160,6 @@ function App() {
     }, 60000); // A cada minuto
     
     return () => clearInterval(stockTimer);
-  }, []);
-  
-  // Simulação de visitantes ativos
-  useEffect(() => {
-    const visitorsTimer = setInterval(() => {
-      setVisitorsCount(prev => {
-        // Gera uma mudança aleatória entre -2 e +3
-        const change = Math.floor(Math.random() * 6) - 2;
-        
-        // Garantir que o número não fique abaixo de 18 ou acima de 40
-        return Math.max(18, Math.min(40, prev + change));
-      });
-    }, 10000); // Atualiza a cada 10 segundos
-    
-    return () => clearInterval(visitorsTimer);
   }, []);
   
   // Monitorar tempo de visita do usuário
@@ -311,10 +228,11 @@ function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastActiveSection, userStats.visitTime]);
   
-  // Detectar intent de saída
+  // Detectar intent de saída - CORRIGIDO
   useEffect(() => {
-    // Não mostrar intent de saída se já foi mostrado ou a exibição automática está desativada
-    if (exitIntentShown || autoModalDisabled) return;
+    // Não mostrar intent de saída se já foi mostrado, se a exibição automática está desativada,
+    // ou se o modal já estiver aberto
+    if (exitIntentShown || autoModalDisabled || showModal) return;
     
     // Só mostramos após pelo menos 20 segundos no site
     const minTimeBeforeIntent = 20000; // 20 segundos
@@ -324,12 +242,13 @@ function App() {
     
     const handleMouseLeave = (e: MouseEvent) => {
       // Só ativamos se o cursor sair pela parte superior e se não estiver em mobile
-      if (e.clientY < 5 && !exitIntentShown && !autoModalDisabled && window.innerWidth >= 768) {
+      // Também verificamos se não há ação em progresso e o modal não está aberto
+      if (e.clientY < 5 && !exitIntentShown && !autoModalDisabled && 
+          window.innerWidth >= 768 && !isActionInProgressRef.current && !showModal) {
         setExitIntentShown(true);
-        setModalVariant('exit-intent');
-        setShowModal(true);
+        handleOpenPurchaseModal(undefined, 'exit-intent');
         
-        // Marcamos como mostrado para não repetir
+        // Rastreamento
         console.log('[Analytics] Exit intent detectado - Tempo: ' + userStats.visitTime + 's');
       }
     };
@@ -339,13 +258,13 @@ function App() {
     return () => {
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [exitIntentShown, userStats.visitTime, autoModalDisabled]);
+  }, [exitIntentShown, userStats.visitTime, autoModalDisabled, showModal]);
   
-  // Timer para mostrar popup baseado no tempo
+  // Timer para mostrar popup baseado no tempo - CORRIGIDO
   useEffect(() => {
-    // Não mostrar se modal já estiver aberto, se exit intent já foi mostrado,
+    // Não mostrar se o modal já estiver aberto, se exit intent já foi mostrado,
     // ou se a exibição automática está desativada
-    if (showModal || exitIntentShown || autoModalDisabled) return;
+    if (showModal || exitIntentShown || autoModalDisabled || isActionInProgressRef.current) return;
     
     // Mostrar modal após 60 segundos se o usuário não interagiu com a oferta
     const timeThreshold = 60; // 60 segundos
@@ -355,101 +274,13 @@ function App() {
       const shouldShowTimeBasedModal = Math.random() < 0.5; // 50% de chance
       
       if (shouldShowTimeBasedModal) {
-        setModalVariant('time-based');
-        setShowModal(true);
+        handleOpenPurchaseModal(undefined, 'time-based');
         
         // Eventos para analytics
         console.log('[Analytics] Modal baseado no tempo exibido - Tempo: ' + userStats.visitTime + 's');
       }
     }
   }, [userStats.visitTime, showModal, exitIntentShown, autoModalDisabled]);
-  
-  // Gerenciar social proofs
-  useEffect(() => {
-    // Mostrar primeiro social proof após 15 segundos
-    const initialTimer = setTimeout(() => {
-      setActiveSocialProof(0);
-    }, 15000);
-    
-    // Rotacionar social proofs
-    const interval = setInterval(() => {
-      if (activeSocialProof !== null) {
-        setActiveSocialProof(prev => prev !== null ? (prev + 1) % socialProofs.length : 0);
-      }
-    }, 8000);
-    
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, [activeSocialProof]);
-  
-  // Gerenciar notificações
-  useEffect(() => {
-    // Criar algumas notificações para mostrar ao longo do tempo
-    const createNotifications = () => {
-      const newNotifications: Notification[] = [
-        {
-          id: 1,
-          type: 'purchase',
-          message: 'Alguém acabou de comprar Juvelina Organics',
-          timestamp: Date.now() + 25000 // 25 segundos após carregar
-        },
-        {
-          id: 2,
-          type: 'stock',
-          message: 'Restam apenas poucas unidades em estoque!',
-          timestamp: Date.now() + 40000 // 40 segundos após carregar
-        },
-        {
-          id: 3,
-          type: 'discount',
-          message: 'Oferta especial: 30% OFF por tempo limitado!',
-          timestamp: Date.now() + 60000 // 60 segundos após carregar
-        },
-        {
-          id: 4,
-          type: 'review',
-          message: 'Amanda acabou de avaliar Juvelina com 5 estrelas!',
-          timestamp: Date.now() + 90000 // 90 segundos após carregar
-        }
-      ];
-      
-      setNotifications(newNotifications);
-    };
-    
-    createNotifications();
-    
-    // Verifica a cada segundo quais notificações devem ser exibidas
-    const notificationChecker = setInterval(() => {
-      const currentTime = Date.now();
-      
-      // Encontrar a próxima notificação a ser mostrada
-      const nextNotification = notifications.find(
-        notif => notif.timestamp <= currentTime && (showNotification !== notif.id)
-      );
-      
-      if (nextNotification) {
-        setShowNotification(nextNotification.id);
-        
-        // Esconde a notificação após 5 segundos
-        setTimeout(() => {
-          setShowNotification(null);
-          
-          // Reagenda esta notificação para aparecer novamente mais tarde
-          setNotifications(prev => 
-            prev.map(n => 
-              n.id === nextNotification.id 
-                ? { ...n, timestamp: Date.now() + (Math.random() * 120000 + 60000) } 
-                : n
-            )
-          );
-        }, 5000);
-      }
-    }, 1000);
-    
-    return () => clearInterval(notificationChecker);
-  }, [notifications, showNotification]);
   
   // Mostrar tooltip de boas-vindas inicial
   useEffect(() => {
@@ -466,27 +297,60 @@ function App() {
     return () => clearTimeout(welcomeTimer);
   }, []);
   
-  // Função para abrir o modal de compra manualmente (para CTA)
-  const handleOpenPurchaseModal = () => {
-    // Sempre configuramos para o tipo default quando é clicado manualmente
-    setModalVariant('default');
+  // FUNÇÃO CORRIGIDA para abrir o modal de compra
+  const handleOpenPurchaseModal = (e?: React.MouseEvent, variant: 'default' | 'exit-intent' | 'time-based' = 'default') => {
+    // Prevenir comportamento padrão se evento for fornecido
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
-    // Abrir o modal diretamente sem verificações complexas
-    setShowModal(true);
-    modalOpenTimestamp.current = Date.now();
+    // Evitar múltiplas aberturas simultâneas
+    if (isActionInProgressRef.current || showModal) return;
+    
+    // Marca que uma ação está em progresso
+    isActionInProgressRef.current = true;
+    
+    // Define o variante e abre o modal
+    setModalVariant(variant);
+    
+    // Pequeno delay para sincronizar estado
+    setTimeout(() => {
+      setShowModal(true);
+      
+      // Libera para novas ações após a animação
+      setTimeout(() => {
+        isActionInProgressRef.current = false;
+      }, 600);
+    }, 50);
     
     // Eventos para analytics
-    console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Seção: ' + lastActiveSection);
+    console.log('[Analytics] CTA Clicado: Abrir Modal de Compra - Variante: ' + variant);
   };
   
-  // Função para fechar o modal com persistência
+  // FUNÇÃO CORRIGIDA para fechar o modal
   const handleCloseModal = () => {
-    // Fechamos o modal
-    setShowModal(false);
+    // Evitar múltiplos fechamentos
+    if (isActionInProgressRef.current || modalCloseAttemptedRef.current) return;
     
-    // Marcar que o modal não deve reabrir automaticamente
-    localStorage.setItem('juvelina_auto_modal_disabled', 'true');
-    setAutoModalDisabled(true);
+    // Marca que uma ação está em progresso e que tentamos fechar
+    isActionInProgressRef.current = true;
+    modalCloseAttemptedRef.current = true;
+    
+    // Fecha o modal com pequeno delay
+    setTimeout(() => {
+      setShowModal(false);
+      
+      // Marca como fechado no localStorage para controlar exibição automática
+      localStorage.setItem('juvelina_auto_modal_disabled', 'true');
+      setAutoModalDisabled(true);
+      
+      // Libera para novas ações após a animação
+      setTimeout(() => {
+        isActionInProgressRef.current = false;
+        modalCloseAttemptedRef.current = false;
+      }, 600);
+    }, 50);
   };
   
   // Função para rolar para o topo
@@ -559,99 +423,15 @@ function App() {
         {/* Barra de progresso de scroll */}
         <ScrollProgressBar color="#A9683D" height={3} showPercentage={false} position="top" />
         
-        {/* Componente de notificações flutuantes */}
-        <CreatorBadge />
+        {/* Componente de notificações flutuantes - apenas em desktop */}
+        {!isMobile && <CreatorBadge />}
         
-        {/* Popup de social proof */}
-        <AnimatePresence>
-          {activeSocialProof !== null && (
-            <motion.div
-              key={`social-proof-${activeSocialProof}`}
-              initial={{ opacity: 0, y: 50, x: -100 }}
-              animate={{ opacity: 1, y: 0, x: 0 }}
-              exit={{ opacity: 0, y: 50 }}
-              transition={{ duration: 0.5 }}
-              className="fixed bottom-5 left-5 z-40 max-w-xs"
-            >
-              <div className="bg-white rounded-lg shadow-xl p-3 border border-juvelina-mint/30">
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={socialProofs[activeSocialProof].avatar} 
-                    alt={socialProofs[activeSocialProof].name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{socialProofs[activeSocialProof].name}</div>
-                    <div className="text-xs text-gray-600">
-                      {socialProofs[activeSocialProof].action} <span className="text-green-500 font-medium">{socialProofs[activeSocialProof].time}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{socialProofs[activeSocialProof].location}</div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Notificações do sistema */}
-        <AnimatePresence>
-          {showNotification !== null && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-20 right-5 z-40 max-w-xs bg-white rounded-lg shadow-lg p-3 border-l-4 border-juvelina-gold"
-            >
-              {notifications.find(n => n.id === showNotification)?.type === 'purchase' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                    <ShoppingCart size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Agora mesmo</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'stock' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600">
-                    <Bell size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Restam apenas {stockCount} unidades</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'discount' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-juvelina-gold/20 rounded-full flex items-center justify-center text-juvelina-gold">
-                    <Sparkles size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Acaba em {discountTimer.hours}h {discountTimer.minutes}m</div>
-                  </div>
-                </div>
-              )}
-              
-              {notifications.find(n => n.id === showNotification)?.type === 'review' && (
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                    <Star size={16} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium">{notifications.find(n => n.id === showNotification)?.message}</div>
-                    <div className="text-xs text-gray-500">Há poucos minutos</div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Nova Notificação de Atividade Recente - apenas nas seções relevantes */}
+        <RecentActivityNotification 
+          enabled={notificationsEnabled} 
+          currentSection={lastActiveSection}
+          isMobile={isMobile}
+        />
         
         {/* Popup de boas-vindas */}
         <AnimatePresence>
@@ -689,30 +469,9 @@ function App() {
           )}
         </AnimatePresence>
         
-        {/* Contador de visitantes */}
+        {/* Contador de visitantes - Versão adaptativa */}
         <div className="fixed bottom-5 right-5 z-40">
-          <AnimatePresence>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 3, duration: 0.5 }}
-              className="bg-white rounded-full py-1 px-3 shadow-md border border-gray-100 flex items-center gap-2"
-            >
-              <div className="flex -space-x-2">
-                {[...Array(3)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-gray-200 border border-white flex items-center justify-center text-xs font-bold text-gray-600"
-                  >
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
-              <span className="text-sm text-gray-700 font-medium">
-                {visitorsCount} pessoas vendo agora
-              </span>
-            </motion.div>
-          </AnimatePresence>
+          <VisitorCounter compact={isMobile} />
         </div>
         
         {/* Announcement Bar - Gatilho de urgência e escassez */}
@@ -770,7 +529,9 @@ function App() {
                   </button>
                 ))}
                 <button 
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setShowIngredients(true);
                     console.log('[Analytics] Visualização de Ingredientes');
                   }}
@@ -779,7 +540,7 @@ function App() {
                   Ingredientes
                 </button>
                 <button 
-                  onClick={handleOpenPurchaseModal}
+                  onClick={(e) => handleOpenPurchaseModal(e)}
                   className="bg-juvelina-gold text-white px-6 py-2 rounded-full hover:bg-opacity-90 transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
                 >
                   <ShoppingCart size={18} />
@@ -821,7 +582,9 @@ function App() {
                   ))}
                   <button 
                     className="text-left text-gray-600 hover:text-juvelina-gold transition py-2 font-medium"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setShowIngredients(true);
                       setMobileMenuOpen(false);
                     }}
@@ -829,8 +592,8 @@ function App() {
                     Ingredientes
                   </button>
                   <button 
-                    onClick={() => {
-                      handleOpenPurchaseModal();
+                    onClick={(e) => {
+                      handleOpenPurchaseModal(e);
                       setMobileMenuOpen(false);
                     }}
                     className="bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition flex items-center justify-center gap-2 w-full mt-2 shadow-md"
@@ -845,9 +608,9 @@ function App() {
         </header>
 
         {/* Main Content */}
-       <main>
+        <main>
           {/* Hero Section */}
-          <HeroSection onCtaClick={handleOpenPurchaseModal} />
+          <HeroSection onCtaClick={(e) => handleOpenPurchaseModal(e)} />
           
           {/* Video Testimonials Section - MOVIDO PARA CÁ */}
           <VideoTestimonialsSection />
@@ -868,10 +631,10 @@ function App() {
           <GuaranteeSection />
           
           {/* Viral Offer Section */}
-          <ViralOfferSection onCtaClick={handleOpenPurchaseModal} />
+          <ViralOfferSection onCtaClick={(e) => handleOpenPurchaseModal(e)} />
           
           {/* Pricing Section */}
-          <PricingSection onCtaClick={handleOpenPurchaseModal} />
+          <PricingSection onCtaClick={(e) => handleOpenPurchaseModal(e)} />
           
           {/* FAQ Section */}
           <FaqSection />
@@ -881,11 +644,15 @@ function App() {
         <Footer />
 
         {/* Modals e Overlays */}
-        <SmartPurchaseModal 
+        <PurchaseModal 
           isOpen={showModal} 
           onClose={handleCloseModal}
           variant={modalVariant}
-          personalizedTitle={getPersonalizedCTA()}
+          personalizedTitle={
+            modalVariant === 'exit-intent' 
+              ? "Espere! Oferta Especial para Você"
+              : getPersonalizedCTA()
+          }
         />
         
         {showIngredients && <IngredientsList onClose={() => setShowIngredients(false)} />}

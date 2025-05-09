@@ -7,7 +7,7 @@ import '../../animations.css';
 
 // Definindo a interface para as props
 interface HeroSectionProps {
-  onCtaClick: () => void;
+  onCtaClick: (e?: React.MouseEvent) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onCtaClick }) => {

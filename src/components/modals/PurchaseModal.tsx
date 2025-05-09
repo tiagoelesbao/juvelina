@@ -1,7 +1,7 @@
-// src/components/modals/PurchaseModal.tsx - CORREÇÃO PARA MODAL QUE PISCA
+// src/components/modals/PurchaseModal.tsx - VERSÃO OTIMIZADA PARA CONVERSÃO
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingCart, CheckCircle, Clock, Shield, Star } from 'lucide-react';
+import { X, ShoppingCart, CheckCircle, Clock, Shield } from 'lucide-react';
 
 interface PurchaseModalProps {
   isOpen: boolean;
@@ -28,16 +28,14 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   personalizedTitle
 }) => {
   const [selectedOption, setSelectedOption] = useState<PurchaseOption>('monthly');
-  const [isLeavingModal, setIsLeavingModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     minutes: 15,
     seconds: 0
   });
-  const [showExitIntent, setShowExitIntent] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [exitIntentShown, setExitIntentShown] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const modalAnimationComplete = useRef<boolean>(false);
+  const [exitIntentShown, setExitIntentShown] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
   
   // Verificar se é mobile
   useEffect(() => {
@@ -56,26 +54,12 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
   // Resetar estados quando o modal é aberto
   useEffect(() => {
     if (isOpen) {
-      // Marca que a animação de abertura não está completa
-      modalAnimationComplete.current = false;
-      
-      setIsLeavingModal(false);
-      
-      // Apenas mostrar o exit intent se nunca foi mostrado antes
       if (variant === 'exit-intent' && !exitIntentShown) {
         setShowExitIntent(true);
         setExitIntentShown(true);
       } else {
         setShowExitIntent(false);
       }
-      
-      // Depois que a animação de abertura terminar, marque como completa
-      // Isso impede fechamentos prematuros durante a animação de abertura
-      const animationTimer = setTimeout(() => {
-        modalAnimationComplete.current = true;
-      }, 500); // tempo aproximado da duração da animação
-      
-      return () => clearTimeout(animationTimer);
     }
   }, [isOpen, variant, exitIntentShown]);
   
@@ -99,18 +83,13 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     return () => clearInterval(timer);
   }, [isOpen]);
   
-  // Click fora para fechar - com proteção contra fechamento acidental
+  // Click fora para fechar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Só fechamos o modal se:
-      // 1. A animação de abertura estiver completa (para evitar fechamento durante a animação)
-      // 2. O clique foi fora do modal
-      // 3. Não estamos no modo exit intent (que tem sua própria lógica de fechamento)
-      if (modalRef.current && 
-          !modalRef.current.contains(event.target as Node) && 
-          !showExitIntent &&
-          modalAnimationComplete.current) {
-        handleClose();
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        if (!showExitIntent) {
+          onClose();
+        }
       }
     };
     
@@ -173,15 +152,19 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     return Math.round(((originalPrice - price) / originalPrice) * 100);
   };
   
-  // Função unificada para fechar o modal com opção de persistência
-  const handleClose = (persistChoice: boolean = false) => {
-    // Se persistChoice for true, salva a escolha do usuário
-    if (persistChoice) {
-      localStorage.setItem('juvelina_modal_closed', 'true');
+  // Título personalizado com base no variant
+  const getTitle = () => {
+    if (personalizedTitle) {
+      return personalizedTitle;
     }
     
-    // Fechamos o modal chamando a função onClose do componente pai
-    onClose();
+    if (variant === 'exit-intent') {
+      return "Espere! Oferta Especial para Você";
+    } else if (variant === 'time-based') {
+      return "Oferta por Tempo Limitado!";
+    }
+    
+    return "Oferta Especial de Lançamento";
   };
   
   // Handler para fechar o exit intent
@@ -199,7 +182,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -208,195 +191,173 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
             backgroundColor: 'rgba(0, 0, 0, 0.5)'
           }}
         >
-          {/* Conteúdo do modal responsivo */}
+          {/* Conteúdo do modal responsivo - VERSÃO MOBILE OTIMIZADA SEM SCROLL */}
           {isMobile ? (
-            // Layout Mobile (Vertical com scroll)
             <motion.div
               ref={modalRef}
-              className="bg-white rounded-t-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative mx-auto mt-auto"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 500 }}
+              className="bg-white rounded-2xl shadow-2xl mx-auto w-[92%] transform-gpu overflow-hidden"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
             >
-              {/* Header com urgência */}
-              <div className="bg-gradient-to-r from-juvelina-gold to-juvelina-gold/80 text-white p-4 rounded-t-2xl sticky top-0 z-20">
+              {/* Header */}
+              <div className="bg-juvelina-gold text-white p-3 rounded-t-2xl relative">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold">{personalizedTitle || getTitle()}</h3>
+                  <h3 className="text-lg font-bold truncate pr-6">{getTitle()}</h3>
                   <button
-                    onClick={() => handleClose(true)}
-                    className="text-white hover:text-gray-200 transition-colors"
+                    onClick={onClose}
+                    className="text-white hover:text-gray-200 transition-colors absolute right-3 top-3"
+                    aria-label="Fechar"
                   >
-                    <X size={24} />
+                    <X size={22} />
                   </button>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <Clock size={18} />
-                  <div className="text-sm">
+                <div className="mt-1 flex items-center gap-1 text-white/90">
+                  <Clock size={14} />
+                  <div className="text-xs">
                     Oferta expira em: <span className="font-bold">{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="p-6">
-                {/* Conteúdo extra específico do variant */}
-                {getExtraContent()}
+              {/* Conteúdo principal - sem scroll */}
+              <div className="p-4">
+                {/* Descrição compacta */}
+                <p className="text-sm text-gray-700 mb-3">
+                  Nosso suplemento líquido premium com 25 nutrientes essenciais e absorção 5x superior garante resultados visíveis desde as primeiras semanas.
+                </p>
                 
-                {/* Breve descrição do produto */}
-                <div className="mb-6">
-                  <h4 className="font-bold text-lg text-juvelina-gold mb-2">Transforme seu bem-estar com Juvelina</h4>
-                  <p className="text-gray-600">
-                    Nosso suplemento líquido premium com 25 nutrientes essenciais e absorção 5x superior garante resultados visíveis desde as primeiras semanas.
-                  </p>
+                <p className="font-medium text-gray-800 mb-2">Escolha sua opção:</p>
+                
+                {/* Opção 1: Experimente */}
+                <div 
+                  className={`border rounded-xl p-3 hover:border-juvelina-gold transition-all cursor-pointer mb-2 ${
+                    selectedOption === 'single' ? 'border-2 border-juvelina-gold bg-juvelina-mint/10' : 'border-gray-200'
+                  }`}
+                  onClick={() => setSelectedOption('single')}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="option-single"
+                        name="purchase_option"
+                        checked={selectedOption === 'single'}
+                        onChange={() => setSelectedOption('single')}
+                        className="accent-juvelina-gold w-4 h-4"
+                      />
+                      <div>
+                        <label htmlFor="option-single" className="font-medium block">
+                          Experimente <span className="ml-1 text-xs text-white bg-juvelina-gold px-1.5 py-0.5 rounded-sm">17% OFF</span>
+                        </label>
+                        <p className="text-xs text-gray-500">Perfeito para iniciar sua jornada</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-juvelina-gold font-bold">R$ 149,90</div>
+                      <div className="text-xs text-gray-400 line-through">R$ 179,90</div>
+                    </div>
+                  </div>
                 </div>
                 
-                {/* Opções de compra */}
-                <div className="border-t border-gray-200 pt-6 mb-6">
-                  <h4 className="font-bold mb-4">Escolha sua opção:</h4>
-                  
-                  <div className="space-y-4">
-                    {(Object.entries(options) as [PurchaseOption, typeof options.single][]).map(([key, option]) => (
-                      <div
-                        key={key}
-                        className={`border rounded-xl p-4 hover:border-juvelina-gold transition-all cursor-pointer relative ${
-                          selectedOption === key
-                            ? 'border-2 border-juvelina-gold bg-juvelina-mint bg-opacity-10'
-                            : 'border-gray-200'
-                        } ${option.popular && selectedOption !== key ? 'border-juvelina-gold/50' : ''}`}
-                        onClick={() => setSelectedOption(key)}
-                      >
-                        {option.popular && (
-                          <motion.div
-                            className="absolute -top-3 right-4 bg-juvelina-gold text-white text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wide"
-                            animate={{ 
-                              scale: [1, 1.05, 1],
-                              boxShadow: [
-                                '0 0 0 rgba(212, 178, 106, 0.4)',
-                                '0 0 8px rgba(212, 178, 106, 0.8)',
-                                '0 0 0 rgba(212, 178, 106, 0.4)'
-                              ]
-                            }}
-                            transition={{
-                              repeat: Infinity,
-                              repeatType: "mirror",
-                              duration: 2
-                            }}
-                          >
-                            Mais Popular
-                          </motion.div>
-                        )}
-                        
-                        <div className="flex gap-3">
-                          <input
-                            type="radio"
-                            id={`option-${key}`}
-                            name="purchase_option"
-                            checked={selectedOption === key}
-                            onChange={() => setSelectedOption(key)}
-                            className="mt-1 accent-juvelina-gold w-5 h-5"
-                          />
-                          <div className="flex-1">
-                            <div className="flex justify-between items-center">
-                              <label htmlFor={`option-${key}`} className="font-bold flex items-center">
-                                <span>{option.title}</span>
-                                {calculateDiscount(option.originalPrice, option.price) > 0 && (
-                                  <span className="ml-2 bg-juvelina-gold/10 text-juvelina-gold text-xs px-2 py-0.5 rounded-full">
-                                    {calculateDiscount(option.originalPrice, option.price)}% OFF
-                                  </span>
-                                )}
-                              </label>
-                              <div>
-                                <span className="text-juvelina-gold font-bold">
-                                  R$ {formatPrice(option.price)}
-                                  {key === 'monthly' && <span className="text-sm font-normal">/mês</span>}
-                                </span>
-                                <div className="text-gray-500 line-through text-sm">
-                                  R$ {formatPrice(option.originalPrice)}
-                                </div>
-                              </div>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1">{option.description}</p>
-                            
-                            {/* Mostrar benefícios apenas para a opção selecionada */}
-                            {selectedOption === key && (
-                              <motion.div 
-                                className="mt-3 space-y-2 bg-gray-50 p-3 rounded-lg"
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                {option.benefits.map((benefit, index) => (
-                                  <div key={index} className="flex items-start gap-2">
-                                    <CheckCircle size={16} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm">{benefit}</span>
-                                  </div>
-                                ))}
-                              </motion.div>
-                            )}
-                          </div>
-                        </div>
+                {/* Opção 2: Assinatura Mensal */}
+                <div 
+                  className={`border rounded-xl p-3 hover:border-juvelina-gold transition-all cursor-pointer mb-2 ${
+                    selectedOption === 'monthly' ? 'border-2 border-juvelina-gold bg-juvelina-mint/10' : 'border-gray-200'
+                  } ${options.monthly.popular ? 'relative' : ''}`}
+                  onClick={() => setSelectedOption('monthly')}
+                >
+                  {options.monthly.popular && (
+                    <div className="absolute -top-2.5 right-3 bg-juvelina-gold text-white text-xs px-2 py-0.5 rounded-md">
+                      MAIS POPULAR
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="option-monthly"
+                        name="purchase_option"
+                        checked={selectedOption === 'monthly'}
+                        onChange={() => setSelectedOption('monthly')}
+                        className="accent-juvelina-gold w-4 h-4"
+                      />
+                      <div>
+                        <label htmlFor="option-monthly" className="font-medium block">
+                          Assinatura Mensal <span className="ml-1 text-xs text-white bg-juvelina-gold px-1.5 py-0.5 rounded-sm">28% OFF</span>
+                        </label>
+                        <p className="text-xs text-gray-500">A escolha inteligente para resultados contínuos</p>
                       </div>
-                    ))}
+                    </div>
+                    <div className="text-right">
+                      <div className="text-juvelina-gold font-bold">R$ 129,90<span className="text-xs font-normal">/mês</span></div>
+                      <div className="text-xs text-gray-400 line-through">R$ 179,90</div>
+                    </div>
+                  </div>
+                  
+                  {/* Benefícios da opção selecionada */}
+                  {selectedOption === 'monthly' && (
+                    <div className="mt-2 grid grid-cols-1 gap-1 pt-2 border-t border-gray-100">
+                      {options.monthly.benefits.map((benefit, index) => (
+                        <div key={index} className="flex items-start gap-1">
+                          <CheckCircle size={12} className="text-juvelina-gold mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-gray-600">{benefit}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Opção 3: Kit 3 Meses */}
+                <div 
+                  className={`border rounded-xl p-3 hover:border-juvelina-gold transition-all cursor-pointer ${
+                    selectedOption === 'kit' ? 'border-2 border-juvelina-gold bg-juvelina-mint/10' : 'border-gray-200'
+                  }`}
+                  onClick={() => setSelectedOption('kit')}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="option-kit"
+                        name="purchase_option"
+                        checked={selectedOption === 'kit'}
+                        onChange={() => setSelectedOption('kit')}
+                        className="accent-juvelina-gold w-4 h-4"
+                      />
+                      <div>
+                        <label htmlFor="option-kit" className="font-medium block">
+                          Kit 3 Meses <span className="ml-1 text-xs text-white bg-juvelina-gold px-1.5 py-0.5 rounded-sm">30% OFF</span>
+                        </label>
+                        <p className="text-xs text-gray-500">Economize mais com nosso pacote trimestral</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-juvelina-gold font-bold">R$ 379,90</div>
+                      <div className="text-xs text-gray-400 line-through">R$ 539,70</div>
+                    </div>
                   </div>
                 </div>
               </div>
               
               {/* Botão de ação principal */}
-              <div className="p-6 pt-0">
-                <motion.button
-                  className="w-full bg-juvelina-gold text-white px-6 py-3 rounded-full hover:bg-opacity-90 transition font-medium flex items-center justify-center gap-2 shadow-lg"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => simulateCheckout()}
+              <div className="p-4 pt-2">
+                <button 
+                  className="w-full py-3 bg-juvelina-gold text-white rounded-full font-medium flex items-center justify-center gap-2 shadow-md"
                 >
-                  <ShoppingCart size={20} />
+                  <ShoppingCart size={18} />
                   Garantir Meu Juvelina Agora
-                </motion.button>
-              </div>
-              
-              {/* Elementos de confiança */}
-              <div className="px-6 pb-6 pt-2 flex items-center justify-center gap-6 text-sm text-gray-600">
-                <div className="flex items-center gap-1">
-                  <Shield size={16} className="text-juvelina-gold" />
-                  <span>Pagamento Seguro</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle size={16} className="text-juvelina-gold" />
-                  <span>Garantia de 30 dias</span>
-                </div>
-              </div>
-              
-              {/* Métodos de pagamento */}
-              <div className="p-6 border-t border-gray-100">
-                <p className="text-center text-sm text-gray-500 mb-2">
-                  Formas de pagamento aceitas
-                </p>
-                <div className="flex justify-center items-center gap-3 mt-2">
-                  <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" className="h-6 w-auto" alt="Visa" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/196/196561.png" className="h-6 w-auto" alt="Mastercard" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/217/217425.png" className="h-6 w-auto" alt="Boleto" />
-                  <img src="https://cdn-icons-png.flaticon.com/512/888/888870.png" className="h-6 w-auto" alt="Pix" />
-                </div>
-              </div>
-              
-              {/* Depoimentos sociais */}
-              <div className="p-6 border-t border-gray-100">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="flex -space-x-2">
-                    {['https://i.pravatar.cc/100?img=1', 'https://i.pravatar.cc/100?img=2', 'https://i.pravatar.cc/100?img=3'].map((avatar, i) => (
-                      <img 
-                        key={i} 
-                        src={avatar} 
-                        alt="Avatar de cliente" 
-                        className="w-8 h-8 rounded-full border-2 border-white"
-                      />
-                    ))}
-                    <div className="w-8 h-8 rounded-full bg-juvelina-gold text-white flex items-center justify-center text-xs font-bold border-2 border-white">
-                      +5k
-                    </div>
+                </button>
+                
+                {/* Elementos de confiança - versão compacta */}
+                <div className="flex items-center justify-center gap-4 mt-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <Shield size={10} className="text-juvelina-gold" />
+                    <span>Pagamento Seguro</span>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-gray-800">+5.000 clientes</span> escolheram Juvelina no último mês
+                  <div className="flex items-center gap-1">
+                    <CheckCircle size={10} className="text-juvelina-gold" />
+                    <span>Garantia de 30 dias</span>
                   </div>
                 </div>
               </div>
@@ -406,14 +367,13 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
             <motion.div
               ref={modalRef}
               className="relative max-w-5xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 500 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
             >
               <div className="bg-gradient-to-r from-juvelina-gold to-juvelina-gold/80 text-white p-4 rounded-t-2xl">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-bold">{personalizedTitle || getTitle()}</h3>
+                  <h3 className="text-xl font-bold">{getTitle()}</h3>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <Clock size={18} />
@@ -422,7 +382,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                       </div>
                     </div>
                     <button
-                      onClick={() => handleClose(true)}
+                      onClick={onClose}
                       className="text-white hover:text-gray-200 transition-colors"
                     >
                       <X size={24} />
@@ -432,9 +392,6 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
               </div>
               
               <div className="p-6">
-                {/* Conteúdo extra específico do variant */}
-                {getExtraContent()}
-                
                 <div className="text-center mb-6">
                   <h4 className="font-bold text-xl text-juvelina-gold mb-2">Escolha seu plano Juvelina</h4>
                   <p className="text-gray-600 max-w-2xl mx-auto">
@@ -520,15 +477,12 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                 </div>
                 
                 <div className="flex justify-center mt-8">
-                  <motion.button
+                  <button
                     className="bg-juvelina-gold text-white px-10 py-3 rounded-full hover:bg-opacity-90 transition font-medium flex items-center justify-center gap-2 shadow-lg max-w-md w-full"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => simulateCheckout()}
                   >
                     <ShoppingCart size={20} />
                     Garantir Meu Juvelina Agora
-                  </motion.button>
+                  </button>
                 </div>
                 
                 {/* Elementos de confiança no rodapé */}
@@ -538,12 +492,8 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                     <span>Pagamento 100% Seguro</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Star size={18} className="text-juvelina-gold" />
-                    <span>Satisfação Garantida</span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <CheckCircle size={18} className="text-juvelina-gold" />
-                    <span>Resultados Comprovados</span>
+                    <span>Satisfação Garantida</span>
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -620,11 +570,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
                     
                     <button
                       className="w-full text-gray-500 px-6 py-2 rounded-full hover:bg-gray-100 transition text-sm mt-2"
-                      onClick={() => {
-                        handleCloseExitIntent();
-                        // Fechar o modal principal quando rejeitar a oferta
-                        handleClose(true);
-                      }}
+                      onClick={handleCloseExitIntent}
                     >
                       Não, prefiro pagar preço integral depois
                     </button>
@@ -637,51 +583,6 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
       )}
     </AnimatePresence>
   );
-
-  // Função para simular checkout (para demonstração)
-  function simulateCheckout() {
-    console.log(`Checkout iniciado com opção: ${selectedOption}`);
-    alert(`Compra simulada com sucesso! Opção escolhida: ${options[selectedOption].title}`);
-    handleClose();
-  }
-
-  // Título personalizado com base no variant
-  function getTitle() {
-    if (personalizedTitle) {
-      return personalizedTitle;
-    }
-    
-    if (variant === 'exit-intent') {
-      return "Espere! Oferta Especial para Você";
-    } else if (variant === 'time-based') {
-      return "Oferta por Tempo Limitado!";
-    }
-    
-    return "Oferta Especial de Lançamento";
-  }
-
-  // Conteúdo adicional com base no variant
-  function getExtraContent() {
-    if (variant === 'exit-intent') {
-      return (
-        <div className="bg-juvelina-mint/20 p-4 rounded-lg my-4">
-          <p className="text-center text-green-800 font-medium">
-            <span className="font-bold">BÔNUS EXCLUSIVO:</span> Adquira agora e ganhe um frasco adicional GRÁTIS!
-          </p>
-        </div>
-      );
-    } else if (variant === 'time-based') {
-      return (
-        <div className="bg-red-50 p-4 rounded-lg my-4 border border-red-100">
-          <p className="text-center text-red-600">
-            <Clock size={16} className="inline mr-1" /> Oferta válida por <span className="font-bold">apenas {timeLeft.minutes}:{timeLeft.seconds.toString().padStart(2, '0')}</span>
-          </p>
-        </div>
-      );
-    }
-    
-    return null;
-  }
 };
 
 export default PurchaseModal;

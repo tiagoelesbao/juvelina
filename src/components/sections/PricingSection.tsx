@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Check, Star } from 'lucide-react';
 
 interface PricingSectionProps {
-  onCtaClick: () => void;
+  onCtaClick: (e?: React.MouseEvent) => void;
 }
 
 const PricingSection: React.FC<PricingSectionProps> = ({ onCtaClick }) => {

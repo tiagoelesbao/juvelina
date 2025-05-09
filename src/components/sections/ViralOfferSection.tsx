@@ -6,7 +6,7 @@ import AnimatedButton from '../ui/AnimatedButton';
 import FireIcon from '../ui/FireIcon';
 
 interface ViralOfferSectionProps {
-  onCtaClick: () => void;
+  onCtaClick: (e?: React.MouseEvent) => void;
 }
 
 const ViralOfferSection: React.FC<ViralOfferSectionProps> = ({ onCtaClick }) => {
